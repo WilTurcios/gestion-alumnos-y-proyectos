@@ -1,0 +1,72 @@
+[
+	{
+		"empresa": "ABC Company",
+		"contacto": "John Doe",
+		"direccion": "123 Main Street, Cityville",
+		"email": "john.doe@abccompany.com",
+		"telefono": "123456789"
+	},
+	{
+		"empresa": "XYZ Corporation",
+		"contacto": "Jane Smith",
+		"direccion": "456 Elm Avenue, Townsville",
+		"email": "jane.smith@xyzcorp.com",
+		"telefono": "987654321"
+	},
+	{
+		"empresa": "Acme Inc.",
+		"contacto": "Michael Johnson",
+		"direccion": "789 Oak Lane, Villageton",
+		"email": "michael.johnson@acmeinc.com",
+		"telefono": "456123789"
+	},
+	{
+		"empresa": "Tech Solutions Ltd.",
+		"contacto": "Emily Brown",
+		"direccion": "321 Pine Road, Tech City",
+		"email": "emily.brown@techsolutions.com",
+		"telefono": "654987321"
+	},
+	{
+		"empresa": "Global Innovations",
+		"contacto": "David Wilson",
+		"direccion": "567 Cedar Street, Innovatia",
+		"email": "david.wilson@globalinnovations.com",
+		"telefono": "789654123"
+	},
+	{
+		"empresa": "Sunrise Enterprises",
+		"contacto": "Sarah Lee",
+		"direccion": "901 Maple Court, Sunrisetown",
+		"email": "sarah.lee@sunriseenterprises.com",
+		"telefono": "321789456"
+	},
+	{
+		"empresa": "Starlight Industries",
+		"contacto": "Christopher Taylor",
+		"direccion": "234 Birch Avenue, Star City",
+		"email": "chris.taylor@starlightindustries.com",
+		"telefono": "876543210"
+	},
+	{
+		"empresa": "Moonbeam Technologies",
+		"contacto": "Amanda White",
+		"direccion": "890 Pineapple Boulevard, Moontown",
+		"email": "amanda.white@moonbeamtech.com",
+		"telefono": "234567890"
+	},
+	{
+		"empresa": "Oceanic Enterprises",
+		"contacto": "Ryan Green",
+		"direccion": "432 Coconut Drive, Oceanville",
+		"email": "ryan.green@oceanicenterprises.com",
+		"telefono": "890123456"
+	},
+	{
+		"empresa": "Mountain View Solutions",
+		"contacto": "Jessica Clark",
+		"direccion": "678 Hilltop Road, Mountaintown",
+		"email": "jessica.clark@mountainviewsolutions.com",
+		"telefono": "567890123"
+	}
+]
