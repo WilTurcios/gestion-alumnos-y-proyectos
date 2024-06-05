@@ -272,44 +272,6 @@ class MySQLUsersService implements IUserService
     $usuarios = [];
     $nombre_completo = "$nombres $apellidos";
 
-    [$primer_nombre, $segundo_nombre] = explode(' ', $nombres);
-    [$primer_apellido, $segundo_apellido] = explode(' ', $apellidos);
-
-    $regex = match (true) {
-      (
-        !is_null($primer_nombre) &&
-        !is_null($segundo_nombre) &&
-        !is_null($primer_apellido) &&
-        !is_null($segundo_apellido)
-      ) => "/\b$primer_nombre\b|\b$segundo_nombre\s+$primer_apellido\b|\b\w+\s+$segundo_apellido\b/",
-      (
-        !is_null($primer_nombre) &&
-        is_null($segundo_nombre) &&
-        !is_null($primer_apellido) &&
-        !is_null($segundo_apellido)
-      ) => "/\b$primer_nombre\b|\b$segundo_nombre\s+$primer_apellido\b|\b\w+\s+$segundo_apellido\b/",
-      (
-        !is_null($primer_nombre) &&
-        is_null($segundo_nombre) &&
-        is_null($primer_apellido) &&
-        !is_null($segundo_apellido)
-      ) => "/\b$primer_nombre\b|\b$segundo_nombre\s+$primer_apellido\b|\b\w+\s+$segundo_apellido\b/",
-      (
-        !is_null($primer_nombre) &&
-        is_null($segundo_nombre) &&
-        is_null($primer_apellido) &&
-        is_null($segundo_apellido)
-      ) => "/\b$primer_nombre\b|\b$segundo_nombre\s+$primer_apellido\b|\b\w+\s+$segundo_apellido\b/",
-      (
-        is_null($primer_nombre) &&
-        is_null($segundo_nombre) &&
-        !is_null($primer_apellido) &&
-        !is_null($segundo_apellido)
-      ) => "/\b$primer_nombre\b|\b$segundo_nombre\s+$primer_apellido\b|\b\w+\s+$segundo_apellido\b/",
-    };
-
-
-
     $query = "SELECT * FROM usuarios 
       WHERE CONCAT(nombres, ' ', apellidos) LIKE %?% ;
     ";
@@ -352,55 +314,57 @@ class MySQLUsersService implements IUserService
     string $nombre_usuario
   ): Usuario | false {
     $usuario = new Usuario();
-    $query = "SELECT * FROM usuarios WHERE nombreusuario = ? ;";
-    $stmt = (new self())->connection->prepare($query);
+    // $query = "select * from usuarios where nombreusuario = ?;";
+    $query = "select * from usuarios where nombreusuario = '$nombre_usuario';";
+    // $stmt = (new self())->connection->prepare($query);
+    $result = (new self())->connection->query($query);
 
-    if ($stmt) {
-      $stmt->bind_param("s", $nombre_usuario);
-      $stmt->execute();
-      $result = $stmt->get_result();
+    // if ($stmt) {
+    // $stmt->bind_param("s", $nombre_usuario);
+    // $stmt->execute();
+    // $result = $stmt->get_result();
 
-      if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-          $usuario->id = $row["idusuario"];
-          $usuario->nombre_usuario = $row["nombreusuario"];
-          $usuario->clave = $row["clave"];
-          $usuario->nombres = $row["nombres"];
-          $usuario->apellidos = $row["apellidos"];
-          $usuario->carnet_docente = $row["carnetdocente"];
-          $usuario->email = $row["email"];
-          $usuario->tel = $row["tel"];
-          $usuario->celular = $row["celular"];
-          $usuario->es_jurado = $row["esjurado"];
-          $usuario->es_asesor = $row["esasesor"];
-          $usuario->acceso_sistema = $row["accesosisxtema"];
-          $usuario->es_admin = $row["esadmin"];
+    if ($result && $result->num_rows > 0) {
+      while ($row = $result->fetch_assoc()) {
+        $usuario->id = $row["idusuario"];
+        $usuario->nombre_usuario = $row["nombreusuario"];
+        $usuario->clave = $row["clave"];
+        $usuario->nombres = $row["nombres"];
+        $usuario->apellidos = $row["apellidos"];
+        $usuario->carnet_docente = $row["carnetdocente"];
+        $usuario->email = $row["email"];
+        $usuario->tel = $row["tel"];
+        $usuario->celular = $row["celular"];
+        $usuario->es_jurado = $row["esjurado"];
+        $usuario->es_asesor = $row["esasesor"];
+        $usuario->acceso_sistema = $row["accesosistema"];
+        $usuario->es_admin = $row["esadmin"];
 
-          break;
-        }
+        break;
       }
-
-      $stmt->close();
-      return $usuario;
-    } else {
-      echo "Error al preparar la consulta: " . (new self())->connection->error;
-      return false;
     }
+
+    // $stmt->close();
+    return $usuario;
+    // } else {
+    //   return false;
+    // }
   }
 
   public static function authenticate(
-    string $nombres,
-    string $apellidos,
+    string $nombre_usuario,
     string $clave = null
   ): Usuario | false {
 
-    [$usuario] = self::getByName($nombres, $apellidos);
+    $usuario = self::getByUsername($nombre_usuario);
 
-    if (!$usuario["ok"] || is_null($clave) || is_null($usuario["data"])) return false;
+    if (!$usuario || !$clave) return false;
+
 
     $claveDesencriptada = encryptor::decrypt($usuario->clave);
 
     if ($clave !== $claveDesencriptada) return false;
+    if (!$usuario->es_admin && !$usuario->acceso_sistema) return false;
 
     return $usuario;
   }

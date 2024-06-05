@@ -74,7 +74,6 @@ class MySQLProjectsService implements IUserService
         $usuario->email,
         $usuario->tel,
         $usuario->celular,
-        $usuario->level,
         $usuario->es_jurado,
         $usuario->es_asesor,
         $usuario->acceso_sistema,
@@ -135,7 +134,6 @@ class MySQLProjectsService implements IUserService
       $usuario->email ?? $previous_user->email,
       $usuario->tel ?? $previous_user->tel,
       $usuario->celular ?? $previous_user->celular,
-      $usuario->level ?? $previous_user->level,
       $usuario->es_jurado,
       $usuario->es_asesor,
       $usuario->acceso_sistema,
@@ -164,7 +162,6 @@ class MySQLProjectsService implements IUserService
       $updated_user->email,
       $updated_user->tel,
       $updated_user->celular,
-      $updated_user->level,
       $updated_user->es_jurado,
       $updated_user->es_asesor,
       $updated_user->acceso_sistema,
@@ -219,7 +216,6 @@ class MySQLProjectsService implements IUserService
         $row["email"],
         $row["tel"],
         $row["celular"],
-        $row["level"],
         $row["esjurado"],
         $row["esasesor"],
         $row["accesosistema"],
@@ -269,7 +265,6 @@ class MySQLProjectsService implements IUserService
             $row["email"],
             $row["tel"],
             $row["celular"],
-            $row["level"],
             $row["esjurado"],
             $row["esasesor"],
             $row["accesosistema"],
@@ -311,7 +306,6 @@ class MySQLProjectsService implements IUserService
           $usuario->email = $row["email"];
           $usuario->tel = $row["tel"];
           $usuario->celular = $row["celular"];
-          $usuario->level = $row["level"];
           $usuario->es_jurado = $row["esjurado"];
           $usuario->es_asesor = $row["esasesor"];
           $usuario->acceso_sistema = $row["accesosistema"];
@@ -330,12 +324,11 @@ class MySQLProjectsService implements IUserService
   }
 
   public static function authenticate(
-    string $nombres,
-    string $apellidos,
+    string $user_name,
     string $clave = null
   ): Usuario | false {
 
-    [$usuario] = self::getByName($nombres, $apellidos);
+    [$usuario] = self::getByUsername($user_name);
 
     if (!$usuario["ok"] || is_null($clave) || is_null($usuario["data"])) return false;
 

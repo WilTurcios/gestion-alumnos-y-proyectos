@@ -15,6 +15,10 @@ function UserRoutes(IUserService $userService)
 
     $data = ($json_data && !empty($json_data)) ? json_decode($json_data, true) : null;
 
+    $nombres = null;
+    $apellidos = null;
+    $pages = null;
+
     if (!is_null($params)) {
       $nombres = (!$params && array_key_exists('nombres', $params)) ? $params['nombres'] : null;
       $apellidos = (!$params && array_key_exists('apellidos', $params)) ? $params['apellidos'] : null;
@@ -23,7 +27,7 @@ function UserRoutes(IUserService $userService)
 
     $response = match (true) {
       $method === 'GET' && $id => $usersController->getUserByID($id),
-      $method === 'GET' && $id => $usersController->getUserByName($nombres, $apellidos),
+      $method === 'GET' && ($nombres || $apellidos) => $usersController->getUserByName($nombres, $apellidos),
       $method === 'GET' => $usersController->getUsers(),
       $method === 'POST' => $usersController->createUser($data),
       $method === 'PUT' => $response = $usersController->updateUser($data),

@@ -151,4 +151,21 @@ class UsersController
 
     return new Response(true, 'Usuario obtenido exitosamente', [$result]);
   }
+
+  public function authenticateUser(?string $user_name, ?string $clave): Response
+  {
+    if (!$user_name || !$clave) return new Response(
+      false,
+      'Asegurate de proporcionar los datos correctamente'
+    );
+
+    $result = $this->userService->authenticate($user_name, $clave);
+
+    if (!$result) return new Response(
+      false,
+      'Autenticación fallida. El usuario o contraseña son incorrectos o no cuentas con los permisos necesarios para acceder al sistema.'
+    );
+
+    return new Response(true, 'Se ha autenticado exitósamente.', [$result]);
+  }
 }

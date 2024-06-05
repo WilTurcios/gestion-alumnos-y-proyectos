@@ -11,8 +11,7 @@ interface IUserService
   public static function getByUsername(string $nombre_usuario): Usuario | false;
   public static function deleteAll(): bool;
   public static function authenticate(
-    string $nombres,
-    string $apellidos,
+    string $nombres_usuario,
     ?string $clave
   ): Usuario | bool;
 }
