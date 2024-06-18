@@ -138,10 +138,10 @@ class MySQLUsersService implements IUserService
       $usuario->email ?? $previous_user->email,
       $usuario->tel ?? $previous_user->tel,
       $usuario->celular ?? $previous_user->celular,
-      $usuario->es_jurado,
-      $usuario->es_asesor,
-      $usuario->acceso_sistema,
-      $usuario->es_admin
+      $usuario->es_jurado ?? $previous_user->es_jurado,
+      $usuario->es_asesor ?? $previous_user->es_asesor,
+      $usuario->acceso_sistema ?? $previous_user->acceso_sistema,
+      $usuario->es_admin ?? $previous_user->es_admin
     );
 
     $campos_set = implode(",", array_map(function ($campo) {
@@ -157,8 +157,7 @@ class MySQLUsersService implements IUserService
     if (!$stmt) return false;
 
     $stmt->bind_param(
-      "issssssssiiii",
-      $updated_user->id,
+      "ssssssssiiiii",
       $updated_user->nombre_usuario,
       $updated_user->clave,
       $updated_user->nombres,
@@ -170,7 +169,8 @@ class MySQLUsersService implements IUserService
       $updated_user->es_jurado,
       $updated_user->es_asesor,
       $updated_user->acceso_sistema,
-      $updated_user->es_admin
+      $updated_user->es_admin,
+      $updated_user->id
     );
 
     $result = $stmt->execute();

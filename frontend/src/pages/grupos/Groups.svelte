@@ -1,0 +1,100 @@
+<script>
+	import { Link } from 'svelte-routing'
+	import Container from '../../components/ui/Container.svelte'
+	import Table from '../../components/ui/Table.svelte'
+	import Toast from '../../components/ui/Toast.svelte'
+	import { Groups } from '../../store/GroupsStore.js'
+
+	let toastElement = null
+	let toastText = 'El grupo se ha creado correctamente'
+	let variant = 'warning'
+	let showToast = false
+
+	let search = ''
+	let timer
+
+	const debounce = v => {
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			search = v
+		}, 750)
+	}
+
+	let grupo = {
+		grupo: null
+	}
+
+	const searchGroup = search => {
+		fetch('http://localhost/proyecto-DAW/backend/api/grupos?nombre=')
+	}
+
+	const handleDelete = id => () => {
+		Groups.deleteGroup(id)
+			.then(() => {
+				showToast = true
+				toastText = 'Grupo eliminado correctamente'
+				variant = 'danger'
+			})
+			.catch(error => {
+				console.error('Error al eliminar el grupo:', error)
+			})
+	}
+
+	const handleOnChange = e => {}
+</script>
+
+<Container>
+	<header class="w-full flex justify-between items-center">
+		<h2 class="text-3xl text-light font-semibold mb-4">Grupos</h2>
+		<div class="flex gap-2 justify-between items-center">
+			<form class="flex gap-2 justify-between items-center">
+				<button
+					class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-green-600"
+				>
+					Buscar
+				</button>
+				<input
+					type="text"
+					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
+					placeholder="Buscar grupos..."
+				/>
+			</form>
+			<Link
+				to="/grupos/agregar_grupo"
+				class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+			>
+				Agregar Grupo
+			</Link>
+		</div>
+	</header>
+	<Table headers={['Nombre del Grupo', 'Acciones']} title="Registros de Grupos">
+		<tbody class="text-xs">
+			{#each $Groups as group}
+				<tr>
+					<td class="w-36 px-4 py-2 whitespace-nowrap">
+						{group.nombre_grupo}
+					</td>
+					<td
+						class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
+					>
+						<button
+							type="button"
+							class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+							on:click={handleDelete(group.id)}>Eliminar</button
+						>
+						<Link
+							to="/grupos/{group.id}"
+							class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+						>
+							Editar
+						</Link>
+					</td>
+				</tr>
+			{/each}
+		</tbody>
+	</Table>
+</Container>
+
+{#if showToast}
+	<Toast bind:toast={toastElement} text={toastText} {variant} bind:showToast />
+{/if}

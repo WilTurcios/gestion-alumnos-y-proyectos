@@ -15,9 +15,8 @@ class Estudiante
     public ?string $tel_alumno = null,
     public ?string $responsable = null,
     public ?string $tel_responsable = null,
-    public ?string $foto = null,
-    public string $clave = 'clave',
-    public string $estado_alumno = 'H',
+    public ?string $clave = 'clave',
+    public ?string $estado_alumno = 'H',
     public ?int $year_ingreso = null,
     public ?Grupo $grupo = null
   ) {

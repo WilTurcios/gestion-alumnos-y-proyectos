@@ -11,22 +11,77 @@ use Usuario;
 
 class UsersController
 {
+  private array $requiredParameters = [
+    'nombre_usuario',
+    'nombres',
+    'apellidos',
+    'clave',
+    'carnet_docente',
+    'email'
+  ];
+  private array $optionalParameters = [
+    'tel',
+    'celular',
+    'es_jurado',
+    'es_asesor',
+    'acceso_sistema',
+    'es_admin'
+  ];
+
   public function __construct(private IUserService $userService)
   {
   }
 
+  private function getRequiredParameters()
+  {
+    return $this->requiredParameters;
+  }
+
+  private function getOptionalParameters()
+  {
+    return $this->optionalParameters;
+  }
+
   public function createUser(array $user_data/*, Usuario $admin*/): Response
   {
+    $requiredParameters = $this->getRequiredParameters();
+
+    $response = null;
+
+    foreach ($requiredParameters as $key) {
+      if (!array_key_exists($key, $user_data)) {
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de proporcionar todos los campos necesarios para agregar un usuario'
+        );
+
+        break;
+      }
+
+      if (empty(trim($user_data[$key]))) {
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de que los campos obligatorios no estén vacios'
+        );
+
+        break;
+      }
+    }
+
+    if ($response) return $response;
+
     $new_user = new Usuario(
       null,
-      $user_data['nombre_usuario'] ?? '',
-      $user_data['clave'] ?? '',
-      $user_data['nombres'] ?? '',
-      $user_data['apellidos'] ?? '',
-      $user_data['carnet_docente'] ?? '',
-      $user_data['email'] ?? '',
-      $user_data['tel'] ?? '',
-      $user_data['celular'] ?? '',
+      $user_data['nombre_usuario'],
+      $user_data['clave'],
+      $user_data['nombres'],
+      $user_data['apellidos'],
+      $user_data['carnet_docente'],
+      $user_data['email'],
+      $user_data['tel'],
+      $user_data['celular'],
       $user_data['es_jurado'] ?? false,
       $user_data['es_asesor'] ?? false,
       $user_data['acceso_sistema'] ?? false,
@@ -37,7 +92,7 @@ class UsersController
 
     if ($result instanceof Usuario) {
       $responseBody["result"] = $result;
-      return new Response(true, 'El usuario se ha creado exitosamente', [$result]);
+      return new Response(true, 200, 'El usuario se ha creado exitosamente', [$result]);
     } else {
       return new Response(
         false,
@@ -53,7 +108,8 @@ class UsersController
     if (!$userId) {
       return new Response(
         false,
-        'Asegurate de proporcionar los datos necesarios para la eliminación del usuario.'
+        400,
+        'Bad Request: Asegurate de proporcionar los datos necesarios para la eliminación del usuario.'
       );
     }
 
@@ -62,10 +118,11 @@ class UsersController
     $result = $this->userService->delete($usuario);
 
     if ($result instanceof Usuario) {
-      return new Response(true, 'El usuario ha sido eliminado correctamente', [$result]);
+      return new Response(true, 200, 'El usuario ha sido eliminado correctamente', [$result]);
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al eliminar el usuario, por favor intentelo de nuevo'
       );
     }
@@ -77,12 +134,13 @@ class UsersController
 
     if (!$userID) return new Response(
       false,
-      'Asegurate de proporcionar los datos necesarios para actualizar al usuario.'
+      400,
+      'Bad Request: Asegurate de proporcionar los datos necesarios para actualizar al usuario.'
     );
 
     $user_to_update = new Usuario(
       $userID,
-      $user_data['nombre_user_data'] ?? null,
+      $user_data['nombre_usuario'] ?? null,
       $user_data['clave'] ?? null,
       $user_data['nombres'] ?? null,
       $user_data['apellidos'] ?? null,
@@ -100,11 +158,13 @@ class UsersController
 
     if (!$updated_user) return new Response(
       false,
+      500,
       'Ha ocurrido un error al actualizar el usuario'
     );
 
     return new Response(
       true,
+      201,
       'Usuario actualizado exitosamente',
       [$updated_user]
     );
@@ -119,7 +179,7 @@ class UsersController
       'Ha ocurrido un error al tratar de obtener los usuarios.'
     );
 
-    return new Response(true, 'Usuarios obtenidos exitosamente.', $result);
+    return new Response(true, 200, 'Usuarios obtenidos exitosamente.', $result);
   }
 
   public function getUserByName(string $nombres, string $apellidos): Response
@@ -128,10 +188,11 @@ class UsersController
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al obtener los usuarios'
     );
 
-    return new Response(true, 'Registros obtenidos exitosamente', $result);
+    return new Response(true, 200, 'Registros obtenidos exitosamente', $result);
   }
 
   public function getUserByID(?int $id_usuario): Response
@@ -146,26 +207,35 @@ class UsersController
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al obtener el usuario'
     );
 
-    return new Response(true, 'Usuario obtenido exitosamente', [$result]);
+    return new Response(true, 200, 'Usuario obtenido exitosamente', [$result]);
   }
 
   public function authenticateUser(?string $user_name, ?string $clave): Response
   {
     if (!$user_name || !$clave) return new Response(
       false,
-      'Asegurate de proporcionar los datos correctamente'
+      400,
+      'Bad Request: Todos los campos son requeridos.'
+    );
+
+    if (empty(trim($user_name)) || empty(trim($clave))) return new Response(
+      false,
+      400,
+      'Bad Request: Asegurate de que los campos no estén vacios.'
     );
 
     $result = $this->userService->authenticate($user_name, $clave);
 
     if (!$result) return new Response(
       false,
-      'Autenticación fallida. El usuario o contraseña son incorrectos o no cuentas con los permisos necesarios para acceder al sistema.'
+      500,
+      'Autenticación fallida. Por favor, intentalo de nuevo.'
     );
 
-    return new Response(true, 'Se ha autenticado exitósamente.', [$result]);
+    return new Response(true, 200, 'Se ha autenticado exitósamente.', [$result]);
   }
 }

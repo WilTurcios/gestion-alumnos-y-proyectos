@@ -13,58 +13,90 @@ use Grupo;
 
 class StudentsController
 {
+  private array $requiredParameters = [
+    'carnet',
+    'nombres',
+    'apellidos',
+    'sexo',
+    'email',
+    'jornada',
+    'direccion',
+    'tel_alumno',
+    'responsable',
+    'tel_responsable',
+    'estado_alumno',
+    'year_ingreso',
+    'id_grupo'
+  ];
+
+  private function getRequiredParameters()
+  {
+    return $this->requiredParameters;
+  }
+
   public function __construct(private IStudentService $studentService)
   {
   }
 
   public function createStudent(array $student_data): Response
   {
-    $new_group = new Grupo($student_data['id_grupo'] ?? null);
+    $requiredParameters = $this->getRequiredParameters();
 
-    $missing_data = false;
+    $response = null;
 
-    foreach ($student_data as $key => $value) {
+    foreach ($requiredParameters as $key) {
       if (!array_key_exists($key, $student_data)) {
-        $missing_data = true;
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de proporcionar todos los campos necesarios para agregar un estudiante'
+        );
+
         break;
       }
-      if (empty($value)) {
-        $missing_data = true;
+
+      if (empty(trim($student_data[$key]))) {
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de que los campos obligatorios no estén vacios'
+        );
+
         break;
       }
     }
 
-    if ($missing_data) return new Response(
-      false,
-      'Asegurate de proporcionar la información necesaria para crear un usuario'
-    );
+    if ($response) return $response;
+
+    $new_group = new Grupo($student_data['id_grupo'] ?? null);
+
 
     $new_student = new Estudiante(
       null,
-      $student_data['carnet'] ?? '',
-      $student_data['nombres'] ?? '',
-      $student_data['apellidos'] ?? '',
-      $student_data['sexo'] ?? '',
-      $student_data['email'] ?? '',
-      $student_data['jornada'] ?? '',
-      $student_data['direccion'] ?? '',
-      $student_data['tel_alumno'] ?? '',
-      $student_data['responsable'] ?? '',
-      $student_data['tel_responsable'] ?? '',
-      $student_data['foto'] ?? '',
-      $student_data['clave'] ?? '',
-      $student_data['estado_alumno'] ?? '',
-      $student_data['year_ingreso'] ?? null,
+      $student_data['carnet'],
+      $student_data['nombres'],
+      $student_data['apellidos'],
+      $student_data['sexo'],
+      $student_data['email'],
+      $student_data['jornada'],
+      $student_data['direccion'],
+      $student_data['tel_alumno'],
+      $student_data['responsable'],
+      $student_data['tel_responsable'],
+      $student_data['clave'],
+      $student_data['estado_alumno'],
+      $student_data['year_ingreso'],
       $new_group
     );
 
     $result = $this->studentService->save($new_student);
 
     if ($result instanceof Estudiante) {
-      return new Response(true, 'El estudiante se ha creado exitosamente', [$result]);
+      return new Response(true, 200, 'El estudiante se ha creado exitosamente', [$result]);
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al crear el estudiante, por favor intentelo de nuevo.'
       );
     }
@@ -86,10 +118,15 @@ class StudentsController
     $result = $this->studentService->delete($student);
 
     if ($result instanceof Estudiante) {
-      return new Response(true, 'El estudiante ha sido eliminado correctamente', [$result]);
+      return new Response(
+        true,
+        204,
+        'El estudiante ha sido eliminado correctamente'
+      );
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al eliminar el estudiante, por favor intentelo de nuevo'
       );
     }
@@ -101,7 +138,8 @@ class StudentsController
 
     if (!$studentId) return new Response(
       false,
-      'Asegurate de proporcionar los datos necesarios para actualizar al estudiante.'
+      400,
+      'Bad Request: Asegurate de proporcionar los datos necesarios para actualizar al estudiante.'
     );
 
     $student_to_update = new Estudiante(
@@ -116,10 +154,9 @@ class StudentsController
       $student_data['tel_alumno'] ?? null,
       $student_data['responsable'] ?? null,
       $student_data['tel_responsable'] ?? null,
-      $student_data['foto'] ?? null,
       $student_data['clave'] ?? null,
       $student_data['estado_alumno'] ?? null,
-      $student_data['year_ingreso'] ?? null,
+      (int)$student_data['year_ingreso'] ?? null,
       $student_data['grupo'] ?? null
     );
 
@@ -127,13 +164,14 @@ class StudentsController
 
     if (!$updated_student) return new Response(
       false,
+      500,
       'Ha ocurrido un error al actualizar el estudiante'
     );
 
     return new Response(
       true,
-      'Estudiante actualizado exitosamente',
-      [$updated_student]
+      201,
+      'Estudiante actualizado exitosamente'
     );
   }
 
@@ -143,10 +181,16 @@ class StudentsController
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al tratar de obtener los estudiantes.'
     );
 
-    return new Response(true, 'Estudiantes obtenidos exitosamente.', $result);
+    return new Response(
+      true,
+      200,
+      'Estudiantes obtenidos exitosamente.',
+      $result
+    );
   }
 
   public function getStudentByName(string $nombres, string $apellidos): Response
@@ -155,17 +199,24 @@ class StudentsController
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al obtener los estudiantes'
     );
 
-    return new Response(true, 'Registros obtenidos exitosamente', $result);
+    return new Response(
+      true,
+      200,
+      'Registros obtenidos exitosamente',
+      $result
+    );
   }
 
   public function getStudentByID(?int $id_estudiante): Response
   {
-    if (!is_integer($id_estudiante)) return new Response(
+    if (is_null($id_estudiante)) return new Response(
       false,
-      'Asegurate de proporcionar los datos correctamente'
+      400,
+      'Bad Request: Asegurate de proporcionar los datos correctamente'
     );
 
     $student = new Estudiante($id_estudiante);
@@ -173,26 +224,34 @@ class StudentsController
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al obtener el estudiante'
     );
 
-    return new Response(true, 'Estudiante obtenido exitosamente', [$result]);
+    return new Response(
+      true,
+      200,
+      'Estudiante obtenido exitosamente',
+      [$result]
+    );
   }
 
   public function getStudentByCarnet(?string $carnet): Response
   {
     if (!$carnet) return new Response(
       false,
-      'Asegurate de proporcionar los datos correctamente'
+      400,
+      'Bad Request: Asegurate de proporcionar los datos correctamente'
     );
 
     $result = $this->studentService->getByCarnet($carnet);
 
     if (!$result) return new Response(
       false,
+      500,
       'Ha ocurrido un error al obtener el estudiante'
     );
 
-    return new Response(true, 'Estudiante obtenido exitosamente', [$result]);
+    return new Response(true, 200, 'Estudiante obtenido exitosamente', [$result]);
   }
 }

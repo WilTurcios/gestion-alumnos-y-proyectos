@@ -165,12 +165,12 @@ class MySQLCompaniesService implements ICompanyService
   {
     if (!$nombre) return false;
 
-    $query = "SELECT * FROM empresas WHERE empresa=?";
+    $query = "SELECT * FROM empresas WHERE empresa LIKE ?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
 
-    $stmt->bind_param("s", $nombre);
+    $stmt->bind_param("s", "%$nombre%");
     $stmt->execute();
 
     $result = $stmt->get_result();

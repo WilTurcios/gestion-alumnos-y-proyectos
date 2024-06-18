@@ -1,0 +1,12 @@
+<script>
+	import { Link } from 'svelte-routing'
+</script>
+
+<nav class="flex justify-evenly items-center gap-2 p-2">
+	<Link to="/">Inicio</Link>
+	<Link to="/usuarios">Usuarios</Link>
+	<Link to="/empresas">Empresas</Link>
+	<Link to="/estudiantes">Estudiantes</Link>
+	<Link to="/grupos">Grupos</Link>
+	<Link to="/perfil">Perfil</Link>
+</nav>

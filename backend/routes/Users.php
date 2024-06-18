@@ -1,6 +1,7 @@
 <?php
 
 require_once 'controllers/UsersController.php';
+require_once 'schemas/Response.php';
 
 use Controllers\UsersController;
 
@@ -9,7 +10,7 @@ function UserRoutes(IUserService $userService)
   return function (string $method, ?string $id, ?array $params) use ($userService) {
     $usersController = new UsersController($userService);
 
-    $response = array('status' => 'failed', 'message' => 'Invalid Request');
+    $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');
 
     $json_data = file_get_contents('php://input');
 
@@ -34,8 +35,6 @@ function UserRoutes(IUserService $userService)
       $method === 'DELETE' => $usersController->deleteUser($data)
     };
 
-    header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($response);
+    return $response;
   };
 }

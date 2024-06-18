@@ -30,7 +30,7 @@ function ProjectRoutes(IUserService $userService)
     }
 
     header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($response);
+    http_response_code($response->status_code);
+    echo json_encode($response->data);
   };
 }

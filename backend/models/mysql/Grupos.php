@@ -110,6 +110,47 @@ class MySQLGroupsService implements IGroupService
     return $grupo;
   }
 
+  public function update(Grupo $grupo): Grupo | false
+  {
+    $previous_group = MySQLGroupsService::getById($grupo->id);
+
+    if (!$previous_group) return false;
+
+    $updated_group = new Grupo(
+      $grupo->id,
+      $grupo->nombre_grupo ?? $previous_group->nombre_grupo
+    );
+
+    $campos_set = implode(",", array_map(function ($campo) {
+      return "$campo = ?";
+    }, $this->campos));
+
+    $query = "
+      UPDATE grupos SET $campos_set WHERE idgrupo = ?
+    ";
+
+    $stmt = $this->connection->prepare($query);
+
+    if (!$stmt) return false;
+
+    $stmt->bind_param(
+      "si",
+      $updated_group->nombre_grupo,
+      $updated_group->id
+    );
+
+    $result = $stmt->execute();
+
+    if (!$result) {
+      $stmt->close();
+      return false;
+    }
+
+    $stmt->close();
+
+    return $updated_group;
+  }
+
   public static function getAll(): array | false
   {
     $connection = (new self())->connection;
@@ -141,12 +182,13 @@ class MySQLGroupsService implements IGroupService
 
   public static function getByName(string $nombre_grupo): Grupo | false
   {
-    $query = "SELECT * FROM grupos WHERE grupo = ? ;";
+    $parametro_busqueda = "%$nombre_grupo%";
+    $query = "SELECT * FROM grupos WHERE grupo LIKE ? ;";
     $stmt = (new self())->connection->prepare($query);
 
     if (!$stmt) return false;
 
-    $stmt->bind_param("s", $nombre_grupo);
+    $stmt->bind_param("s", $parametro_busqueda);
     $stmt->execute();
     $result = $stmt->get_result();
 

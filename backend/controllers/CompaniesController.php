@@ -12,27 +12,52 @@ use Empresa;
 
 class CompaniesController
 {
+  private array $requiredParameters = [
+    'empresa',
+    'contacto',
+    'direccion',
+    'email',
+    'telefono'
+  ];
+
   public function __construct(private ICompanyService $companyService)
   {
   }
 
+  public function getRequiredParameters()
+  {
+    return $this->requiredParameters;
+  }
+
   public function createCompany(array $empresa_data): Response
   {
-    $missing_data = false;
+    $requiredParameters = $this->getRequiredParameters();
 
-    foreach ($empresa_data as $key => $value) {
-      if (!array_key_exists($key, $empresa_data) || empty($value)) {
-        $missing_data = true;
+    $response = null;
+
+    foreach ($requiredParameters as $key) {
+      if (!array_key_exists($key, $empresa_data)) {
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de proporcionar todos los campos necesarios para agregar una empresa'
+        );
+
+        break;
+      }
+
+      if (empty(trim($empresa_data[$key]))) {
+        $response = new Response(
+          false,
+          400,
+          'Bad Request: Asegurese de que los campos obligatorios no estén vacios'
+        );
+
         break;
       }
     }
 
-    if ($missing_data) {
-      return new Response(
-        false,
-        'Asegúrate de proporcionar la información necesaria para crear una empresa'
-      );
-    }
+    if ($response) return $response;
 
     $empresa = new Empresa(
       null,
@@ -46,11 +71,12 @@ class CompaniesController
     $result = $this->companyService->save($empresa);
 
     if ($result instanceof Empresa) {
-      return new Response(true, 'La empresa se ha creado exitosamente', [$result]);
+      return new Response(true, 200, 'La empresa se ha agregado exitosamente', [$result]);
     } else {
       return new Response(
         false,
-        'Ha ocurrido un error al crear la empresa, por favor intenta de nuevo.'
+        500,
+        'Ha ocurrido un error al agregar la empresa, por favor intenta de nuevo.'
       );
     }
   }
@@ -62,14 +88,19 @@ class CompaniesController
     if (!$empresaId) {
       return new Response(
         false,
-        'Asegúrate de proporcionar los datos necesarios para la eliminación de la empresa.'
+        400,
+        'Bad Request: Asegúrate de proporcionar los datos necesarios para la eliminación de la empresa.'
       );
     }
 
     $result = $this->companyService->delete($empresaId);
 
     if ($result) {
-      return new Response(true, 'La empresa ha sido eliminada correctamente', []);
+      return new Response(
+        true,
+        201,
+        'La empresa ha sido eliminada correctamente'
+      );
     } else {
       return new Response(
         false,
@@ -85,6 +116,7 @@ class CompaniesController
     if (!$empresaId) {
       return new Response(
         false,
+        400,
         'Asegúrate de proporcionar los datos necesarios para actualizar la empresa.'
       );
     }
@@ -101,10 +133,11 @@ class CompaniesController
     $result = $this->companyService->update($empresa);
 
     if ($result instanceof Empresa) {
-      return new Response(true, 'La empresa ha sido actualizada exitosamente', [$result]);
+      return new Response(true, 201, 'La empresa ha sido actualizada exitosamente');
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al actualizar la empresa, por favor intenta de nuevo'
       );
     }
@@ -115,10 +148,11 @@ class CompaniesController
     $result = $this->companyService->getAll();
 
     if ($result) {
-      return new Response(true, 'Empresas obtenidas exitosamente', $result);
+      return new Response(true, 200, 'Empresas obtenidas exitosamente', $result);
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al obtener las empresas, por favor intenta de nuevo'
       );
     }
@@ -136,10 +170,11 @@ class CompaniesController
     $result = $this->companyService->getById($empresaId);
 
     if ($result instanceof Empresa) {
-      return new Response(true, 'Empresa obtenida exitosamente', [$result]);
+      return new Response(true, 200, 'Empresa obtenida exitosamente', [$result]);
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al obtener la empresa, por favor intenta de nuevo'
       );
     }
@@ -150,17 +185,19 @@ class CompaniesController
     if (!$nombre) {
       return new Response(
         false,
-        'Asegúrate de proporcionar un nombre válido para obtener la empresa'
+        400,
+        'Bad Request: Asegúrate de proporcionar un nombre válido para obtener la empresa'
       );
     }
 
     $result = $this->companyService->getByName($nombre);
 
     if ($result instanceof Empresa) {
-      return new Response(true, 'Empresa obtenida exitosamente', [$result]);
+      return new Response(true, 200, 'Empresa obtenida exitosamente', [$result]);
     } else {
       return new Response(
         false,
+        500,
         'Ha ocurrido un error al obtener la empresa, por favor intenta de nuevo'
       );
     }

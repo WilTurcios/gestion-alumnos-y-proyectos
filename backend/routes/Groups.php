@@ -18,20 +18,19 @@ function GroupRoutes(IGroupService $groupService)
     $nombre_grupo = null;
 
     if (!is_null($params)) {
-      $nombre_grupo = (!$params && array_key_exists('nombre_grupo', $params)) ? $params['nombre_grupo'] : null;
+      $nombre_grupo = ($params && array_key_exists('nombre_grupo', $params)) ? $params['nombre_grupo'] : null;
     }
 
     $response = match (true) {
+      $method === 'GET' && !is_null($nombre_grupo) => $groupsController->getGroupByName($nombre_grupo),
       $method === 'GET' && $id => $groupsController->getGroupByID($id),
-      $method === 'GET' && $nombre_grupo => $groupsController->getGroupByName($nombre_grupo),
       $method === 'GET' => $groupsController->getAllGroups(),
       $method === 'POST' => $groupsController->createGroup($data),
+      $method === 'PUT' => $groupsController->updateGroup($data),
       $method === 'DELETE' && $id => $groupsController->deleteGroup($id),
       $method === 'DELETE' => $groupsController->deleteAllGroups()
     };
 
-    header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($response);
+    return $response;
   };
 }

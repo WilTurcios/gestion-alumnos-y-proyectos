@@ -22,7 +22,6 @@ class MySQLStudentsService implements IStudentService
     'telalumno',
     'responsable',
     'telresponsable',
-    'foto',
     'clave',
     'estadoalumno',
     'yearingreso',
@@ -68,7 +67,7 @@ class MySQLStudentsService implements IStudentService
     if (!$stmt) return false;
 
     $stmt->bind_param(
-      "ssssssssssssssi",
+      "sssssssssssssi",
       $estudiante->carnet,
       $estudiante->nombres,
       $estudiante->apellidos,
@@ -79,7 +78,6 @@ class MySQLStudentsService implements IStudentService
       $estudiante->tel_alumno,
       $estudiante->responsable,
       $estudiante->tel_responsable,
-      $estudiante->foto,
       $clave_encriptada,
       $estudiante->estado_alumno,
       $estudiante->year_ingreso,
@@ -119,7 +117,6 @@ class MySQLStudentsService implements IStudentService
       $estudiante->tel_alumno ?? $previous_student->tel_alumno,
       $estudiante->responsable ?? $previous_student->responsable,
       $estudiante->tel_responsable ?? $previous_student->tel_responsable,
-      $estudiante->foto ?? $previous_student->foto,
       $estudiante->clave ?? $previous_student->clave,
       $estudiante->estado_alumno ?? $previous_student->estado_alumno,
       $estudiante->year_ingreso ?? $previous_student->year_ingreso,
@@ -139,7 +136,7 @@ class MySQLStudentsService implements IStudentService
     if (!$stmt) return false;
 
     $stmt->bind_param(
-      "ssssssssssssssii",
+      "sssssssssssssii",
       $updated_student->carnet,
       $updated_student->nombres,
       $updated_student->apellidos,
@@ -150,7 +147,6 @@ class MySQLStudentsService implements IStudentService
       $updated_student->tel_alumno,
       $updated_student->responsable,
       $updated_student->tel_responsable,
-      $updated_student->foto,
       $updated_student->clave,
       $updated_student->estado_alumno,
       $updated_student->year_ingreso,
@@ -212,7 +208,6 @@ class MySQLStudentsService implements IStudentService
         $row["telalumno"],
         $row["responsable"],
         $row["telresponsable"],
-        $row["foto"],
         $row["clave"],
         $row["estadoalumno"],
         $row["yearingreso"]
@@ -258,7 +253,6 @@ class MySQLStudentsService implements IStudentService
             $row["telalumno"],
             $row["responsable"],
             $row["telresponsable"],
-            $row["foto"],
             $row["clave"],
             $row["estadoalumno"],
             $row["yearingreso"]
@@ -308,7 +302,6 @@ class MySQLStudentsService implements IStudentService
       $row["telalumno"],
       $row["responsable"],
       $row["telresponsable"],
-      $row["foto"],
       $row["clave"],
       $row["estadoalumno"],
       $row["yearingreso"]
@@ -350,7 +343,6 @@ class MySQLStudentsService implements IStudentService
       $row["telalumno"],
       $row["responsable"],
       $row["telresponsable"],
-      $row["foto"],
       $row["clave"],
       $row["estadoalumno"],
       $row["yearingreso"]

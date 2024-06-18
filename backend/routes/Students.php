@@ -37,8 +37,6 @@ function StudentRoutes(IStudentService $studentService)
       $method === 'DELETE' => $studentsController->deleteStudent($data)
     };
 
-    header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($response);
+    return $response;
   };
 }

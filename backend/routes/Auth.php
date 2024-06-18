@@ -8,8 +8,15 @@ function logOut()
 {
   if (isset($_SESSION['usuario'])) {
     unset($_SESSION['usuario']);
+
+    return new Response(true, 203, 'Ha cerrado sesión correctamente');
   }
-  return new Response(true, 'Ha cerrado sesión correctamente');
+
+  return new Response(
+    false,
+    400,
+    'Bad Request: El usuario no puede cerrar sesión ya que no hay ninguna sesión iniciada'
+  );
 }
 
 function logIn($user_name, $clave, $usersController)
@@ -22,14 +29,28 @@ function logIn($user_name, $clave, $usersController)
   return $result;
 }
 
+function getAuthenticatedUser($usersController)
+{
+  if (!isset($_SESSION['usuario'])) return new Response(
+    false,
+    401,
+    'Unauthorized: No tienes los permisos necesarios para acceder a este recurso'
+  );
+
+  return new Response(true, 200, 'Usuario autenticado obtenido exitosamente', [$_SESSION['usuario']]);
+}
+
+function changePassword($new_password, $current_password)
+{
+  return new Response(true, 203, 'La contraseña se ha cambiado correctamente');
+}
 
 function AuthRoutes(IUserService $userService)
 {
   return function (string $method, ?string $action) use ($userService) {
-    // echo 'HERE IT GOES' . $action;
     $usersController = new UsersController($userService);
 
-    $response = new Response(false, 'El usuario no se pudo autenticar');
+    $response = new Response(false, 500, 'El usuario no se pudo autenticar');
 
     $json_data = file_get_contents('php://input');
 
@@ -38,16 +59,17 @@ function AuthRoutes(IUserService $userService)
 
     if ($method !== 'POST') return new Response(
       false,
+      400,
       'Para autenticarse o cerrar sesión se debe hacer uso del metodo POST'
     );
 
+    $response = match ($action) {
+      'login' => logIn($data['user_name'], $data['clave'], $usersController),
+      'usuario_autenticado' => getAuthenticatedUser($usersController),
+      'logout' => logout(),
+      'change_password' => changePassword($data['new_password'], $data['current_password'])
+    };
 
-    $response = ($action === 'login')
-      ? logIn($data['user_name'], $data['clave'], $usersController)
-      : logOut();
-
-    header('Content-Type: application/json');
-    http_response_code(200);
-    echo json_encode($response);
+    return $response;
   };
 }
