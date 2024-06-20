@@ -1,26 +1,32 @@
 import { writable } from 'svelte/store'
 
 const createAuthenticatedUserStore = async () => {
-	// let INITIAL_USER = []
-	// try {
-	// 	const res = await fetch(
-	// 		'http://localhost/proyecto-DAW/backend/api/auth/usuario_autenticado'
-	// 	)
-	// 	if (!res.ok) {
-	// 		throw new Error(`HTTP error! status: ${res.status}`)
-	// 	}
-	// 	const data = await res.json()
-	// 	INITIAL_USER = data
-	// } catch (error) {
-	// 	console.error('Error fetching groups:', error)
-	// }
-	const { subscribe, set, update } = writable(null)
+	let INITIAL_USER = null
+	try {
+		const res = await fetch(
+			'http://localhost/proyecto-DAW/backend/auth/usuario_autenticado',
+			{
+				method: 'POST'
+			}
+		)
+		if (!res.ok) {
+			INITIAL_USER = null
+		} else {
+			const data = await res.json()
+			INITIAL_USER = data
+		}
+	} catch (error) {
+		console.error('Error fetching user:', error)
+	}
+
+	// if(INITIAL_USER.es_admin && INITIAL_USER.acceso_sistema)
+	const { subscribe, set, update } = writable(INITIAL_USER)
 
 	return {
 		subscribe,
 		login: async user => {
 			const res = await fetch(
-				'http://localhost/proyecto-DAW/backend/api/auth/login',
+				'http://localhost/proyecto-DAW/backend/auth/login',
 				{
 					method: 'POST',
 					headers: {
@@ -30,15 +36,20 @@ const createAuthenticatedUserStore = async () => {
 				}
 			)
 
-			if (!res.ok) console.log('bad')
-			const [authenticatedUser] = await res.json()
+			if (!res.ok) {
+				throw new Error(
+					'Error de autenticacion: Usuario o contraseña incorrectos'
+				)
+			} else {
+				const [authenticatedUser] = await res.json()
 
-			set(authenticatedUser)
+				set(authenticatedUser)
+			}
 		},
 		logout: async () => {
 			try {
 				const res = await fetch(
-					`http://localhost/proyecto-DAW/backend/api/auth/logout`,
+					`http://localhost/proyecto-DAW/backend/auth/logout`,
 					{
 						method: 'POST'
 					}

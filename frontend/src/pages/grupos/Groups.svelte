@@ -24,6 +24,18 @@
 		grupo: null
 	}
 
+	let ids_grupos = {
+		ids: []
+	}
+
+	const handleDeleteMultiple = () => {
+		Groups.deleteMutlipleGroups(ids_grupos.ids).then(() => {
+			showToast = true
+			toastText = 'Grupos eliminados correctamente'
+			variant = 'success'
+		})
+	}
+
 	const searchGroup = search => {
 		fetch('http://localhost/proyecto-DAW/backend/api/grupos?nombre=')
 	}
@@ -33,7 +45,7 @@
 			.then(() => {
 				showToast = true
 				toastText = 'Grupo eliminado correctamente'
-				variant = 'danger'
+				variant = 'success'
 			})
 			.catch(error => {
 				console.error('Error al eliminar el grupo:', error)
@@ -59,23 +71,43 @@
 					placeholder="Buscar grupos..."
 				/>
 			</form>
-			<Link
-				to="/grupos/agregar_grupo"
-				class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
-			>
-				Agregar Grupo
-			</Link>
+			<div class="flex gap-2 justify-between items-center">
+				<Link
+					to="/grupos/agregar_grupo"
+					class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+				>
+					Agregar Grupo
+				</Link>
+
+				<button
+					class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+					on:click={handleDeleteMultiple}
+					disabled={ids_grupos.ids.length === 0}
+				>
+					Eliminar Seleccionados
+				</button>
+			</div>
 		</div>
 	</header>
-	<Table headers={['Nombre del Grupo', 'Acciones']} title="Registros de Grupos">
+	<Table
+		headers={['Accion Multiple', 'Nombre del Grupo', 'Acciones']}
+		title="Registros de Grupos"
+	>
 		<tbody class="text-xs">
 			{#each $Groups as group}
 				<tr>
-					<td class="w-36 px-4 py-2 whitespace-nowrap">
+					<td class="px-4 py-2 whitespace-nowrap min-w-max">
+						<input
+							type="checkbox"
+							bind:group={ids_grupos.ids}
+							value={group.id}
+						/>
+					</td>
+					<td class="min-w-max px-4 py-2 whitespace-nowrap">
 						{group.nombre_grupo}
 					</td>
 					<td
-						class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
+						class="px-4 py-2 whitespace-nowrap flex justify-center items-center"
 					>
 						<button
 							type="button"

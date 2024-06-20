@@ -102,19 +102,6 @@
 						bind:value={usuario.nombre_usuario}
 					/>
 				</div>
-				<!-- <div>
-						<label for="clave" class="block text-sm font-medium text-gray-700">
-							Clave
-						</label>
-						<input
-							id="clave"
-							name="clave"
-							type="password"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={usuario.clave}
-						/>
-					</div>
-				</div> -->
 
 				<div class="grid grid-cols-2 gap-4">
 					<div>

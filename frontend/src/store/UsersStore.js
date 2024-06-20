@@ -58,6 +58,30 @@ const createUsersStore = async () => {
 				console.error('Error deleting user:', error)
 			}
 		},
+    deleteMutlipleUsers: async ids => {
+			try {
+				const res = await fetch(
+					'http://localhost/proyecto-DAW/backend/api/usuarios',
+					{
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ ids })
+					}
+				)
+
+				if (res.ok) {
+					update(users => {
+						return users.filter(user => !ids.includes(user.id))
+					})
+				} else {
+					console.error('Error al intentar eliminar usuarios.')
+				}
+			} catch (error) {
+				console.error('Error de red:', error)
+			}
+		},
 		updateUser: async userToUpdate => {
 			try {
 				const res = await fetch(

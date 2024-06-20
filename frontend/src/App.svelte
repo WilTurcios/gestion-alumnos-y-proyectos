@@ -16,74 +16,76 @@
 	import AddCompany from './pages/empresas/AddCompany.svelte'
 	import EditGroup from './pages/grupos/EditGroup.svelte'
 	import AddGroup from './pages/grupos/AddGroup.svelte'
-	import GridComponent from './pages/Grid.svelte'
 	import { AuthenticatedUser } from './store/AuthenticatedUserStore'
 	import Login from './pages/auth/Login.svelte'
+	import Backup from './pages/backup/Backup.svelte'
 
-	// if ($AuthenticatedUser === null) {
-	// 	navigate('/login', { replace: true })
-	// }
+	if ($AuthenticatedUser === null) {
+		navigate('/login', { replace: true })
+	}
 </script>
 
 <main>
 	<Router>
-		<!-- {#if $AuthenticatedUser !== null} -->
-		<Container>
-			<Header />
-		</Container>
+		{#if $AuthenticatedUser !== null}
+			<Container>
+				<Header>
+					<img src="images/logo.png" alt="ITCA FEPADE" class="w-64" />
+				</Header>
+			</Container>
 
-		<Route path="/">
-			<Home />
-		</Route>
-		<Route path="/estudiantes">
-			<Students />
-		</Route>
-		<Route path="/estudiantes/agregar_estudiante">
-			<AddStudent />
-		</Route>
-		<Route path="/estudiantes/:id" let:params>
-			<EditStudent current_student_id={params.id} />
-		</Route>
-		<Route path="/grupos">
-			<Groups />
-		</Route>
-		<Route path="/grupos/agregar_grupo">
-			<AddGroup />
-		</Route>
-		<Route path="/grupos/:id" let:params>
-			<EditGroup currentGroupID={params.id} />
-		</Route>
-		<Route path="/empresas">
-			<Companies />
-		</Route>
-		<Route path="/empresas/agregar_empresa">
-			<AddCompany />
-		</Route>
-		<Route path="/empresas/:id" let:params>
-			<EditCompany currentCompanyId={params.id} />
-		</Route>
-		<Route path="/usuarios">
-			<Users />
-		</Route>
-		<Route path="/usuarios/agregar_usuario">
-			<AddUser />
-		</Route>
-		<Route path="/usuarios/:id" let:params>
-			<EditUser currentUserID={params.id} />
-		</Route>
-		<Route path="/perfil">
-			<Users />
-		</Route>
-		<Route path="/prueba">
-			<GridComponent />
-		</Route>
-		<Container>
-			<Footer />
-		</Container>
-		<!-- {:else} -->
-		<!-- <Route path="/login">
+			<Route path="/">
+				<Home />
+			</Route>
+			<Route path="/estudiantes">
+				<Students />
+			</Route>
+			<Route path="/estudiantes/agregar_estudiante">
+				<AddStudent />
+			</Route>
+			<Route path="/estudiantes/:id" let:params>
+				<EditStudent current_student_id={params.id} />
+			</Route>
+			<Route path="/grupos">
+				<Groups />
+			</Route>
+			<Route path="/grupos/agregar_grupo">
+				<AddGroup />
+			</Route>
+			<Route path="/grupos/:id" let:params>
+				<EditGroup currentGroupID={params.id} />
+			</Route>
+			<Route path="/empresas">
+				<Companies />
+			</Route>
+			<Route path="/empresas/agregar_empresa">
+				<AddCompany />
+			</Route>
+			<Route path="/empresas/:id" let:params>
+				<EditCompany currentCompanyId={params.id} />
+			</Route>
+			<Route path="/usuarios">
+				<Users />
+			</Route>
+			<Route path="/usuarios/agregar_usuario">
+				<AddUser />
+			</Route>
+			<Route path="/usuarios/:id" let:params>
+				<EditUser currentUserID={params.id} />
+			</Route>
+			<Route path="/perfil">
+				<Users />
+			</Route>
+			<Route path="/backup">
+				<Backup />
+			</Route>
+			<Container>
+				<Footer />
+			</Container>
+		{:else}
+			<Route path="/login">
 				<Login />
-			</Route> -->
-		<!-- {/if} -->
+			</Route>
+		{/if}
 	</Router>
 </main>

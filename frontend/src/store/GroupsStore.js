@@ -55,6 +55,30 @@ const createGroupsStore = async () => {
 				console.error('Error deleting group:', error)
 			}
 		},
+		deleteMutlipleGroups: async ids => {
+			try {
+				const res = await fetch(
+					'http://localhost/proyecto-DAW/backend/api/grupos',
+					{
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ ids })
+					}
+				)
+
+				if (res.ok) {
+					update(groups => {
+						return groups.filter(group => !ids.includes(group.id))
+					})
+				} else {
+					console.error('Error al intentar eliminar grupos.')
+				}
+			} catch (error) {
+				console.error('Error de red:', error)
+			}
+		},
 		updateGroup: async groupToUpdate => {
 			try {
 				const res = await fetch(

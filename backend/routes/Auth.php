@@ -1,8 +1,9 @@
 <?php
 
-require_once 'controllers/UsersController.php';
+require_once 'controllers/UserController.php';
+require_once 'models/Usuarios.php';
 
-use Controllers\UsersController;
+use Controllers\UserController;
 
 function logOut()
 {
@@ -45,31 +46,29 @@ function changePassword($new_password, $current_password)
   return new Response(true, 203, 'La contraseña se ha cambiado correctamente');
 }
 
-function AuthRoutes(IUserService $userService)
-{
-  return function (string $method, ?string $action) use ($userService) {
-    $usersController = new UsersController($userService);
+$usersController = new UserController(new UserModel());
 
-    $response = new Response(false, 500, 'El usuario no se pudo autenticar');
+$response = new Response(false, 500, 'El usuario no se pudo autenticar');
 
-    $json_data = file_get_contents('php://input');
+$json_data = file_get_contents('php://input');
 
-    $data = ($json_data && !empty($json_data)) ? json_decode($json_data, true) : null;
+$data = ($json_data && !empty($json_data)) ? json_decode($json_data, true) : null;
 
 
-    if ($method !== 'POST') return new Response(
-      false,
-      400,
-      'Para autenticarse o cerrar sesión se debe hacer uso del metodo POST'
-    );
+if ($method !== 'POST') return new Response(
+  false,
+  400,
+  'Para autenticarse o cerrar sesión se debe hacer uso del metodo POST'
+);
 
-    $response = match ($action) {
-      'login' => logIn($data['user_name'], $data['clave'], $usersController),
-      'usuario_autenticado' => getAuthenticatedUser($usersController),
-      'logout' => logout(),
-      'change_password' => changePassword($data['new_password'], $data['current_password'])
-    };
+$response = match ($action) {
+  'login' => logIn($data['user_name'], $data['clave'], $usersController),
+  'usuario_autenticado' => getAuthenticatedUser($usersController),
+  'logout' => logout(),
+  'change_password' => changePassword($data['new_password'], $data['current_password'])
+};
 
-    return $response;
-  };
-}
+http_response_code($response->status_code);
+echo json_encode($response->data);
+
+exit(0);

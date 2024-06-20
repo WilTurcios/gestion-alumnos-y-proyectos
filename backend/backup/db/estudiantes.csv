@@ -1,0 +1,7 @@
+idalumno,carnet,nombres,apellidos,sexo,email,jornada,dirección,telalumno,responsable,telresponsable,clave,estadoalumno,yearingreso,idgrupo
+3,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,Z1pVQUl6K0tsYkVNc3BCREJ1dEFEdz09OjrzByyyiOKlFq7l9xqTbzzU,H,2016,3
+4,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,UDJkdDZqTVBuTjFYU3M4czNvUU9xdz09Ojpa5VXjmImKcE//Rx+We0PD,H,2016,3
+5,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,S2s2Mm5vQlBqMlV5b0c5SzNGSElMZz09OjrjDb79n9dh4rrBu1AJBVBy,H,2016,3
+6,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,NDRCQ1J6Wmt0WDVQVEU1ZFlMQWFiZz09Ojp5L8sHwiB+dTmrCgSDuiTF,H,2016,3
+7,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,SWlPWmJTV1Rmbjk5ZWZBWVdYbjRoZz09OjrC/ZPIon3Gk6nVNfRhxFJ9,H,2016,3
+8,890123,Pedro,Rodríguez,masculino,pedro.rodriguez@example.com,Vespertina,"Avenida Cuaternaria #789",13579246,"Laura Gutiérrez",57912468,RUZuS3pOZXN4ZUJSZGEwM1FNcXl6Zz09OjrVgQYEQVnMjXfiUDyvh8QR,H,2016,3

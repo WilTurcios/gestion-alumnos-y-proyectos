@@ -10,6 +10,18 @@
 	let variant = 'success'
 	$: showToast = false
 
+	let ids_empresas = {
+		ids: []
+	}
+
+	const handleDeleteMultiple = () => {
+		Companies.deleteMutlipleCompanies(ids_empresas.ids).then(() => {
+			showToast = true
+			toastText = 'Estudiantes eliminados correctamente'
+			variant = 'danger'
+		})
+	}
+
 	const handleDelete = id => e => {
 		Companies.deleteCompany(id).then(() => {
 			showToast = true
@@ -35,16 +47,26 @@
 					placeholder="Buscar empresas..."
 				/>
 			</form>
-			<Link
-				to="/empresas/agregar_empresa"
-				class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
-			>
-				Agregar Empresa
-			</Link>
+			<div class="flex gap-2 justify-between items-center">
+				<Link
+					to="/empresas/agregar_empresa"
+					class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+				>
+					Agregar Empresa
+				</Link>
+				<button
+					class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+					on:click={handleDeleteMultiple}
+					disabled={ids_empresas.ids.length === 0}
+				>
+					Eliminar Seleccionados
+				</button>
+			</div>
 		</div>
 	</header>
 	<Table
 		headers={[
+			'Acción Multiple',
 			'Nombre',
 			'Contacto',
 			'Direccion',
@@ -56,6 +78,13 @@
 		<tbody class="text-xs">
 			{#each $Companies as company}
 				<tr>
+					<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+						<input
+							type="checkbox"
+							bind:group={ids_empresas.ids}
+							value={company.id}
+						/>
+					</td>
 					<td class="px-4 py-2 whitespace-nowrap min-w-max">
 						{company.empresa}
 					</td>

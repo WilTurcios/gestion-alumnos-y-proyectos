@@ -1,0 +1,4 @@
+id,nombreusuario,clave,nombres,apellidos,carnetdocente,email,tel,celular,esjurado,esasesor,accesosistema,esadmin
+1,Alexis,VDJZUjRxVlFEeDMzUEpRdDQySndndz09OjrzyMzc5PEgF7KEIGu4r7a/,Alejandro,Gutiérrez,255023,alexis.fernandez@itca.edu.sv,12341234,23452345,1,1,1,1
+2,flopez,Y29jNXZsZTJqTUpzbEcxSlBSUXNpdz09OjpO1/0ZwXwzatbrQl1pDur6,Fernando,López,DOC901,fernando.lopez@example.com,654987321,321987654,,,1,
+14,flopezz,VjN1SjRhSElYNXRIWWgyRnE0RHRkZz09Ojp6tloq3GCLfIWSEJujB2aY,Fernando,López,DOS901,fernando.lopez@example.com,654987321,321987654,,,1,

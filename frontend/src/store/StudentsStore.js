@@ -57,6 +57,30 @@ const createStudentsStore = async () => {
 					return students.filter(student => student.id !== id)
 				})
 		},
+		deleteMutlipleStudents: async ids => {
+			try {
+				const res = await fetch(
+					'http://localhost/proyecto-DAW/backend/api/estudiantes',
+					{
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({ ids })
+					}
+				)
+
+				if (res.ok) {
+					update(students => {
+						return students.filter(student => !ids.includes(student.id))
+					})
+				} else {
+					console.error('Error al intentar eliminar estudiantes.')
+				}
+			} catch (error) {
+				console.error('Error de red:', error)
+			}
+		},
 		updateStudent: async studentToUpdate => {
 			try {
 				const res = await fetch(

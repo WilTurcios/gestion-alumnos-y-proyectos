@@ -8,5 +8,6 @@
 	<Link to="/empresas">Empresas</Link>
 	<Link to="/estudiantes">Estudiantes</Link>
 	<Link to="/grupos">Grupos</Link>
+	<Link to="/backup">Copia de Seguridad</Link>
 	<Link to="/perfil">Perfil</Link>
 </nav>
