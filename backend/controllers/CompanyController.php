@@ -3,7 +3,7 @@
 namespace Controllers;
 
 require_once 'schemas/Response.php';
-require_once 'models/mysql/Empresas.php';
+require_once 'models/Empresas.php';
 require_once 'exceptions/ParameterIsMissingException.php';
 require_once 'exceptions/UnauthorizedRequestException.php';
 require_once 'exceptions/BadRequestException.php';
@@ -206,7 +206,7 @@ class CompanyController
 
     if ($result) {
 
-      if (count($result) !== 0) throw new NotFoundException(
+      if (count($result) === 0) throw new NotFoundException(
         'Not Found: No hay registros de empresas',
       );
 
@@ -247,12 +247,10 @@ class CompanyController
 
     $result = $this->companyService->getByName($nombre);
 
-    if ($result instanceof Empresa) {
-      return new Response(true, 200, 'Empresa obtenida exitosamente', [$result]);
+    if ($result) {
+      return new Response(true, 200, 'Empresa obtenida exitosamente', $result);
     } else {
-      throw new InternalServerErrorException(
-        'Internal Server Error: Ha ocurrido un error al obtener la empresa, por favor intenta de nuevo'
-      );
+      throw new NotFoundException('Not Found: La empresa no fue encontrada');
     }
   }
 }

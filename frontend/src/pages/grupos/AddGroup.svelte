@@ -2,7 +2,7 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Groups } from '../../store/GroupsStore.js'
+	import { addGroup } from '../../services/GroupService'
 
 	let toastElement = null
 	let toastText = 'El grupo se ha creado correctamente'
@@ -14,7 +14,7 @@
 	}
 
 	function handleSubmit(e) {
-		Groups.addGroup(grupo)
+		addGroup(grupo)
 			.then(() => {
 				grupo.grupo = null
 				showToast = true

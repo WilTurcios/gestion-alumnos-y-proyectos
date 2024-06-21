@@ -17,7 +17,7 @@ class UserModel
     'apellidos',
     'carnet_docente',
     'email',
-    'telefonoefono',
+    'telefono',
     'celular',
     'es_jurado',
     'es_asesor',
@@ -44,6 +44,15 @@ class UserModel
   private function getValoresInsert()
   {
     return implode(",", array_fill(0, count($this->campos), "?"));
+  }
+
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM usuarios";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
   }
 
   public function save(Usuario $usuario): Usuario | false
@@ -161,7 +170,7 @@ class UserModel
   public function update(Usuario $usuario): Usuario | false
   {
 
-    $previous_user = MySQLUsersService::getById($usuario);
+    $previous_user = UserModel::getById($usuario);
 
     if (!$previous_user) return false;
 
@@ -180,6 +189,15 @@ class UserModel
       $usuario->acceso_sistema ?? $previous_user->acceso_sistema,
       $usuario->es_admin ?? $previous_user->es_admin
     );
+
+    /*
+     {
+      "total_count": 100,
+      "next": "http://localhost/proyecto-DAW/api/usuarios?offset=20&limit=10",
+      "previous": "http://localhost/proyecto-DAW/api/usuarios?offset=10&limit=10",
+      "results": []
+     }
+    */
 
     $campos_set = implode(",", array_map(function ($campo) {
       return "$campo = ?";
@@ -241,13 +259,14 @@ class UserModel
     if ($resultSet->num_rows === 0) return false;
 
     $row = $resultSet->fetch_assoc();
+
     $usuario = new Usuario(
       $row["id"],
       $row["usuario"],
       $row["clave"],
       $row["nombres"],
       $row["apellidos"],
-      $row["carnetdocente"],
+      $row["carnet_docente"],
       $row["email"],
       $row["telefono"],
       $row["celular"],
@@ -277,7 +296,7 @@ class UserModel
         $row["clave"],
         $row["nombres"],
         $row["apellidos"],
-        $row["carnetdocente"],
+        $row["carnet_docente"],
         $row["email"],
         $row["telefono"],
         $row["celular"],
@@ -310,7 +329,7 @@ class UserModel
         $row["clave"],
         $row["nombres"],
         $row["apellidos"],
-        $row["carnetdocente"],
+        $row["carnet_docente"],
         $row["email"],
         $row["telefono"],
         $row["celular"],
@@ -343,7 +362,7 @@ class UserModel
         $row["clave"],
         $row["nombres"],
         $row["apellidos"],
-        $row["carnetdocente"],
+        $row["carnet_docente"],
         $row["email"],
         $row["telefono"],
         $row["celular"],
@@ -395,7 +414,7 @@ class UserModel
         $row["clave"],
         $row["nombres"],
         $row["apellidos"],
-        $row["carnetdocente"],
+        $row["carnet_docente"],
         $row["email"],
         $row["telefono"],
         $row["celular"],
@@ -430,18 +449,18 @@ class UserModel
     if ($result && $result->num_rows > 0) {
       while ($row = $result->fetch_assoc()) {
         $usuario->id = $row["id"];
-        $usuario->nombre_usuario = $row["usuario"];
+        $usuario->usuario = $row["usuario"];
         $usuario->clave = $row["clave"];
         $usuario->nombres = $row["nombres"];
         $usuario->apellidos = $row["apellidos"];
-        $usuario->carnet_docente = $row["carnetdocente"];
+        $usuario->carnet_docente = $row["carnet_docente"];
         $usuario->email = $row["email"];
         $usuario->telefono = $row["telefono"];
         $usuario->celular = $row["celular"];
         $usuario->es_jurado = $row["es_jurado"];
         $usuario->es_asesor = $row["es_asesor"];
-        $usuario->acceso_sistema = $row["accesosistema"];
-        $usuario->es_admin = $row["esadmin"];
+        $usuario->acceso_sistema = $row["acceso_sistema"];
+        $usuario->es_admin = $row["es_admin"];
 
         break;
       }

@@ -38,7 +38,7 @@ switch ($method) {
     }
     break;
   default:
-    $response = array('status' => 'failed', 'message' => 'Invalid Request Method');
+    $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');
     break;
 }
 

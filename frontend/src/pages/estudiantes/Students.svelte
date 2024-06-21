@@ -5,11 +5,16 @@
 	import { Students } from '../../store/StudentsStore'
 	import { Groups } from '../../store/GroupsStore.js'
 	import { Link } from 'svelte-routing'
+	import { getStudents } from '../../services/StudentService'
 
 	let toastElement = null
+	let search = ''
+	let timer
 	let toastText = 'El alumno se ha creado correctamente'
 	let variant = 'warning'
 	$: showToast = false
+
+	$: estudiantes = getStudents()
 
 	let ids_estudiantes = {
 		ids: []
@@ -30,6 +35,14 @@
 			variant = 'danger'
 		})
 	}
+	const debounce = v => {
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			search = v
+		}, 750)
+	}
+
+	function handleSearch() {}
 </script>
 
 <Container>
@@ -46,6 +59,7 @@
 					type="text"
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
 					placeholder="Buscar estudiantes..."
+					on:change={handleSearch}
 				/>
 			</form>
 			<div class="flex gap-2 justify-between items-center">
@@ -80,53 +94,57 @@
 		title="Registros de Estudiantes"
 	>
 		<tbody class="text-xs">
-			{#each $Students as alumno}
-				<tr>
-					<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
-						<input
-							type="checkbox"
-							bind:group={ids_estudiantes.ids}
-							value={alumno.id}
-						/>
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
-						{alumno.nombres}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.apellidos}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.sexo}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.direccion}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.carnet}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.tel_alumno}
-					</td>
-					<td class="px-4 py-2 whitespace-nowrap">
-						{alumno.email}
-					</td>
-					<td
-						class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
-					>
-						<button
-							type="button"
-							class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-							on:click={handleDelete(alumno.id)}>Eliminar</button
+			{#await estudiantes}
+				<p>Cargando estudiantes...</p>
+			{:then estudiantes}
+				{#each estudiantes as alumno}
+					<tr>
+						<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+							<input
+								type="checkbox"
+								bind:group={ids_estudiantes.ids}
+								value={alumno.id}
+							/>
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+							{alumno.nombres}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.apellidos}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.sexo}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.direccion}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.carnet}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.telefono_alumno}
+						</td>
+						<td class="px-4 py-2 whitespace-nowrap">
+							{alumno.email}
+						</td>
+						<td
+							class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
 						>
-						<Link
-							to="/estudiantes/{alumno.id}"
-							class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
-						>
-							Editar
-						</Link>
-					</td>
-				</tr>
-			{/each}
+							<button
+								type="button"
+								class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+								on:click={handleDelete(alumno.id)}>Eliminar</button
+							>
+							<Link
+								to="/estudiantes/{alumno.id}"
+								class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+							>
+								Editar
+							</Link>
+						</td>
+					</tr>
+				{/each}
+			{/await}
 		</tbody>
 	</Table>
 </Container>

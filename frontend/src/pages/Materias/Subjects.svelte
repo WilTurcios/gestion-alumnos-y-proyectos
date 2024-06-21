@@ -3,23 +3,23 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
-	import { getCompanies } from '../../services/CompanyService'
+	import { Subjects } from '../../store/SubjectsStore'
+	import { getSubjects } from '../../services/SubjectService'
 
 	let toastElement = null
 	let toastText = 'La empresa se ha registrado correctamente'
 	let variant = 'success'
-	let timer
 	$: showToast = false
+	let timer
 
-	$: empresas = getCompanies()
-
-	let ids_empresas = {
+	let ids_materias = {
 		ids: []
 	}
 
+	$: materias = getSubjects()
+
 	const handleDeleteMultiple = () => {
-		Companies.deleteMutlipleCompanies(ids_empresas.ids).then(() => {
+		Subjects.deleteMutlipleSubjects(ids_materias.ids).then(() => {
 			showToast = true
 			toastText = 'Estudiantes eliminados correctamente'
 			variant = 'danger'
@@ -27,7 +27,7 @@
 	}
 
 	const handleDelete = id => e => {
-		Companies.deleteCompany(id).then(() => {
+		Subjects.deleteSubject(id).then(() => {
 			showToast = true
 			toastText = 'Registro eliminado correctament'
 			variant = 'danger'
@@ -37,17 +37,17 @@
 	function handleSearch(event) {
 		const search = event.target.value
 		if (!search) {
-			empresas = getCompanies()
+			materias = getSubjects()
 		}
 
 		clearTimeout(timer)
 
 		timer = setTimeout(() => {
 			fetch(
-				`http://localhost/proyecto-DAW/backend/api/empresas?nombre=${search}`
+				`http://localhost/proyecto-DAW/backend/api/materias?nombre=${search}`
 			)
 				.then(res => {
-					empresas = res.json()
+					materias = res.json()
 				})
 				.catch(error => {
 					console.error('Error fetching groups:', error)
@@ -78,7 +78,7 @@
 				<button
 					class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
 					on:click={handleDeleteMultiple}
-					disabled={ids_empresas.ids.length === 0}
+					disabled={ids_materias.ids.length === 0}
 				>
 					Eliminar Seleccionados
 				</button>
@@ -97,50 +97,57 @@
 		title="Registros de empresas"
 	>
 		<tbody class="text-xs">
-			{#await empresas}
-				<p>Cargando empresas</p>
-			{:then empresas}
-				{#each empresas as company}
-					<tr>
-						<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
-							<input
-								type="checkbox"
-								bind:group={ids_empresas.ids}
-								value={company.id}
-							/>
-						</td>
-						<td class="px-4 py-2 whitespace-nowrap min-w-max">
-							{company.nombre}
-						</td>
-						<td class="px-4 py-2 whitespace-nowrap">
-							{company.contacto}
-						</td>
-						<td class="px-4 py-2 whitespace-nowrap">
-							{company.direccion}
-						</td>
-						<td class="px-4 py-2 whitespace-nowrap">
-							{company.telefono}
-						</td>
-						<td class="px-4 py-2 whitespace-nowrap">
-							{company.email}
-						</td>
-						<td
-							class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
-						>
-							<button
-								type="button"
-								class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-								on:click={handleDelete(company.id)}>Eliminar</button
+			{#await materias}
+				<p>Cargando materias...</p>
+			{:then materias}
+				{#if materias.length === 0}
+					<p>Sin resultados</p>
+				{:else}
+					{#each materias as subject}
+						<tr>
+							<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+								<input
+									type="checkbox"
+									bind:group={ids_materias.ids}
+									value={subject.id}
+								/>
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap min-w-max">
+								{subject.nombre}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.porcentaje}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.porcentaje_individual}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.porcentaje_grupal}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.fecha_inicio}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.fecha_fin}
+							</td>
+							<td
+								class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
 							>
-							<Link
-								to="/empresas/{company.id}"
-								class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
-							>
-								Editar
-							</Link>
-						</td>
-					</tr>
-				{/each}
+								<button
+									type="button"
+									class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+									on:click={handleDelete(subject.id)}>Eliminar</button
+								>
+								<Link
+									to="/empresas/{subject.id}"
+									class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+								>
+									Editar
+								</Link>
+							</td>
+						</tr>
+					{/each}
+				{/if}
 			{/await}
 		</tbody>
 	</Table>

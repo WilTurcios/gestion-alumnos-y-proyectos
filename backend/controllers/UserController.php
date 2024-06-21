@@ -5,13 +5,15 @@ namespace Controllers;
 require_once 'schemas/Response.php';
 require_once 'schemas/Usuario.php';
 
+use BadRequestException;
+use InternalServerErrorException;
 use Response;
 use Usuario;
 
 class UserController
 {
   private array $requiredParameters = [
-    'nombre_usuario',
+    'usuario',
     'nombres',
     'apellidos',
     'clave',
@@ -19,7 +21,7 @@ class UserController
     'email'
   ];
   private array $optionalParameters = [
-    'tel',
+    'telefono',
     'celular',
     'es_jurado',
     'es_asesor',
@@ -73,13 +75,13 @@ class UserController
 
     $new_user = new Usuario(
       null,
-      $user_data['nombre_usuario'],
+      $user_data['usuario'],
       $user_data['clave'],
       $user_data['nombres'],
       $user_data['apellidos'],
       $user_data['carnet_docente'],
       $user_data['email'],
-      $user_data['tel'],
+      $user_data['telefono'],
       $user_data['celular'],
       $user_data['es_jurado'] ?? false,
       $user_data['es_asesor'] ?? false,
@@ -93,26 +95,22 @@ class UserController
       $responseBody["result"] = $result;
       return new Response(true, 200, 'El usuario se ha creado exitosamente', [$result]);
     } else {
-      return new Response(
-        false,
-        'Ha ocurrido un error al crear el usuario, por favor intentelo de nuevo.'
+      throw new InternalServerErrorException(
+        'Ha ocurrido un error al crear el usuario, por favor intentelefonoo de nuevo.'
       );
     }
   }
 
-  public function deleteUser(array $user_data/*, Usuario $admin*/): Response
+  public function deleteUserById(?int $id/*, Usuario $admin*/): Response
   {
-    $userId = $user_data['id'] ?? null;
 
-    if (!$userId) {
-      return new Response(
-        false,
-        400,
+    if (!$id) {
+      throw new BadRequestException(
         'Bad Request: Asegurate de proporcionar los datos necesarios para la eliminación del usuario.'
       );
     }
 
-    $usuario = new Usuario($userId);
+    $usuario = new Usuario($id);
 
     $result = $this->userService->delete($usuario);
 
@@ -122,7 +120,7 @@ class UserController
       return new Response(
         false,
         500,
-        'Ha ocurrido un error al eliminar el usuario, por favor intentelo de nuevo'
+        'Ha ocurrido un error al eliminar el usuario, por favor intentelefonoo de nuevo'
       );
     }
   }
@@ -139,13 +137,13 @@ class UserController
 
     $user_to_update = new Usuario(
       $userID,
-      $user_data['nombre_usuario'] ?? null,
+      $user_data['usuario'] ?? null,
       $user_data['clave'] ?? null,
       $user_data['nombres'] ?? null,
       $user_data['apellidos'] ?? null,
       $user_data['carnet_docente'] ?? null,
       $user_data['email'] ?? null,
-      $user_data['tel'] ?? null,
+      $user_data['telefono'] ?? null,
       $user_data['celular'] ?? null,
       $user_data['es_jurado'] ?? false,
       $user_data['es_asesor'] ?? false,
@@ -242,7 +240,7 @@ class UserController
       return new Response(
         false,
         500,
-        'Ha ocurrido un error al eliminar los usuarios, por favor inténtelo de nuevo'
+        'Ha ocurrido un error al eliminar los usuarios, por favor inténtelefonoo de nuevo'
       );
     }
 

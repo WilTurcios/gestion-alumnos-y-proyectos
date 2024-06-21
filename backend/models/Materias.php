@@ -1,6 +1,8 @@
 <?php
 
 require_once 'schemas/Materia.php';
+require_once 'schemas/Usuario.php';
+require_once 'models/Usuarios.php';
 require_once 'exceptions/NotFoundException.php';
 
 class SubjectModel
@@ -24,6 +26,15 @@ class SubjectModel
     } catch (Exception $ex) {
       echo "Ha ocurrido un error: " . $ex->getMessage();
     }
+  }
+
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM materias";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
   }
 
   public function save(Materia $materia): Materia | false
@@ -225,7 +236,11 @@ class SubjectModel
 
     $materias = [];
 
+    $userModel = new UserModel();
+
     while ($row = $result->fetch_assoc()) {
+      $user = new Usuario($row['creado_por']);
+      $creado_por = $userModel->getById($user);
       $materia = new Materia(
         $row['id'],
         $row['nombre'],
@@ -236,7 +251,7 @@ class SubjectModel
         $row['fecha_fin'],
         $row['activo'],
         $row['year'],
-        $row['creado_por']
+        $creado_por
       );
 
       $materias[] = $materia;
@@ -263,6 +278,10 @@ class SubjectModel
 
     $row = $result->fetch_assoc();
 
+    $userModel = new UserModel();
+    $user = new Usuario($row['creado_por']);
+
+    $creado_por = $userModel->getById($user);
     $materia = new Materia(
       $row['id'],
       $row['nombre'],
@@ -273,7 +292,7 @@ class SubjectModel
       $row['fecha_fin'],
       $row['activo'],
       $row['year'],
-      $row['creado_por']
+      $creado_por
     );
 
     $stmt->close();
@@ -285,11 +304,12 @@ class SubjectModel
   {
     if (!$nombre) return false;
 
-    $query = "SELECT * FROM materias WHERE nombre LIKE ?";
+    $query = "SELECT * FROM materias WHERE LOWER(nombre) LIKE ?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
 
+    $nombre = strtolower($nombre);
     $likeNombre = "%" . $nombre . "%";
     $stmt->bind_param("s", $likeNombre);
     $stmt->execute();
@@ -300,7 +320,12 @@ class SubjectModel
 
     $materias = [];
 
+    $userModel = new UserModel();
+
     while ($row = $result->fetch_assoc()) {
+      $user = new Usuario($row['creado_por']);
+
+      $creado_por = $userModel->getById($user);
       $materia = new Materia(
         $row['id'],
         $row['nombre'],
@@ -311,7 +336,7 @@ class SubjectModel
         $row['fecha_fin'],
         $row['activo'],
         $row['year'],
-        $row['creado_por']
+        $creado_por
       );
 
       $materias[] = $materia;

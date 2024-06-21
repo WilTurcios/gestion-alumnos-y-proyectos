@@ -1,6 +1,7 @@
 <?php
 
 require_once 'utils/encryptor.php';
+require_once 'Grupos.php';
 
 use Utils\encryptor;
 
@@ -41,6 +42,16 @@ class StudentModel
     } catch (Exception $ex) {
       echo "Ha ocurrido un error: " . $ex->getMessage();
     }
+  }
+
+  private static function buildRegex($terms)
+  {
+    $regexParts = [];
+    foreach ($terms as $term) {
+      $regexParts[] = "(^| )$term($| )";
+    }
+    $regex = implode('|', $regexParts);
+    return $regex;
   }
 
   private function getInsertValues()
@@ -89,13 +100,22 @@ class StudentModel
 
     $estudiante->id = $this->connection->insert_id;
 
-    $group = MySQLGroupsService::getById($estudiante->grupo->id);
+    $group = GroupModel::getById($estudiante->grupo->id);
 
     $estudiante->grupo = $group;
 
     $stmt->close();
 
     return $estudiante;
+  }
+
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM alumnos";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
   }
 
   public function update(Estudiante $estudiante): Estudiante | false
@@ -250,7 +270,7 @@ class StudentModel
         $row["year_ingreso"]
       );
 
-      $group = MySQLGroupsService::getById($row["id_grupo"]);
+      $group = GroupModel::getById($row["id_grupo"]);
       $student->grupo = $group ? $group : null;
 
 
@@ -262,17 +282,20 @@ class StudentModel
   }
 
   public static function getByName(
-    string $nombres,
-    string $apellidos
+    string $nombre
   ): array | false {
     $students = [];
-    $nombre_completo = "$nombres $apellidos";
+
+    $partes = explode(' ', $nombre);
+
+    $regex = self::buildRegex($partes);
+
     $query = "SELECT * FROM alumnos 
-      WHERE CONCAT(nombres, ' ', apellidos) LIKE ?";
+      WHERE LOWER(CONCAT(nombres, ' ', apellidos)) REGEXP ?";
     $stmt = (new self())->connection->prepare($query);
 
     if ($stmt) {
-      $stmt->bind_param("s", "%$nombre_completo%");
+      $stmt->bind_param("s", $regex);
       $stmt->execute();
       $result = $stmt->get_result();
 
@@ -295,7 +318,7 @@ class StudentModel
             $row["year_ingreso"]
           );
 
-          $group = MySQLGroupsService::getById($row["id_grupo"]);
+          $group = GroupModel::getById($row["id_grupo"]);
           $student->grupo = $group ? $group : null;
 
           $students[] = $student;
@@ -344,7 +367,7 @@ class StudentModel
       $row["year_ingreso"]
     );
 
-    $group = MySQLGroupsService::getById($row["id_grupo"]);
+    $group = GroupModel::getById($row["id_grupo"]);
     $student->grupo = $group ? $group : null;
 
     $stmt->close();
@@ -385,7 +408,7 @@ class StudentModel
       $row["year_ingreso"]
     );
 
-    $group = MySQLGroupsService::getById($row["id_grupo"]);
+    $group = GroupModel::getById($row["id_grupo"]);
     $student->grupo = $group ? $group : null;
 
     $stmt->close();

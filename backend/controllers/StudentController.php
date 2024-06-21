@@ -242,9 +242,9 @@ class StudentController
     );
   }
 
-  public function getStudentByName(string $nombres, string $apellidos): Response
+  public function getStudentByName(string $nombre): Response
   {
-    $result = $this->studentService->getByName($nombres, $apellidos);
+    $result = $this->studentService->getByName($nombre);
 
     if (!$result) return new Response(
       false,

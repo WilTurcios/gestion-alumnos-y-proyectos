@@ -28,6 +28,15 @@ class EvaluationModel
     }
   }
 
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM evaluaciones";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
+  }
+
   public function save(Proyecto $proyecto): Proyecto | false
   {
     $query = "INSERT INTO evaluaciones (tema, id_empresa, id_asesor, objetivos, alcances_limitantes, observaciones, cd, estado, motivo, justificacion, resultados_esperados, fecha_presentacion, doc, creado_por) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

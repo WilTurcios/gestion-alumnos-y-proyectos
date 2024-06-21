@@ -2,16 +2,20 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { addUser } from '../../services/UserService'
+	import { Users } from '../../store/UsersStore.js'
+	import { getUserById } from '../../services/UserService'
+	import { getProjectById } from '../../services/ProjectService'
+
+	export let currentUserID
 
 	let toastElement = null
-	let toastText = 'El usuario se ha creado correctamente'
+	let toastText = 'El alumno se ha creado correctamente'
 	let variant = 'warning'
 	$: showToast = false
 
 	let usuario = {
+		id: currentUserID,
 		usuario: null,
-		clave: null,
 		nombres: null,
 		apellidos: null,
 		carnet_docente: null,
@@ -25,31 +29,51 @@
 		es_admin: false
 	}
 
-	function handleSubmit() {
-		addUser(usuario)
-			.then(() => {
-				usuario = {
-					usuario: null,
-					clave: null,
-					nombres: null,
-					apellidos: null,
-					carnet_docente: null,
-					email: null,
-					telefono: null,
-					celular: null,
-					sexo: null,
-					es_jurado: false,
-					es_asesor: false,
-					acceso_sistema: false,
-					es_admin: false
-				}
-				showToast = true
-				toastText = 'Usuario creado correctamente'
-				variant = 'success'
-
-				navigate('/usuarios', { replace: true })
+	const getById = id => {
+		const estudiante = getProjectById(id)
+			.then(user => {
+				usuario.usuario = user[0].usuario
+				usuario.nombres = user[0].nombres
+				usuario.apellidos = user[0].apellidos
+				usuario.sexo = user[0].sexo
+				usuario.email = user[0].email
+				usuario.carnet_docente = user[0].carnet_docente
+				usuario.telefono = user[0].telefono
+				usuario.celular = user[0].celular
+				usuario.es_jurado = user[0].es_jurado
+				usuario.es_asesor = user[0].es_asesor
+				usuario.acceso_sistema = user[0].acceso_sistema
+				usuario.es_admin = user[0].es_admin
 			})
-			.catch(err => console.log(err))
+	}
+
+	getById(currentUserID)
+
+	function handleSubmit(e) {
+		Users.updateUser(usuario).then(user => {
+			usuario.usuario = null
+			usuario.nombres = null
+			usuario.apellidos = null
+			usuario.sexo = null
+			usuario.email = null
+			usuario.carnet_docente = null
+			usuario.telefono = null
+			usuario.celular = null
+			usuario.es_jurado = null
+			usuario.es_asesor = null
+			usuario.acceso_sistema = null
+			usuario.es_admin = null
+
+			toastText = 'El usuario se ha actualizado correctamente'
+			variant = 'success'
+			showToast = true
+
+			setTimeout(() => {
+				navigate('/usuarios', { replace: true })
+			}, 1500)
+
+			return user
+		})
 	}
 </script>
 
@@ -59,35 +83,21 @@
 		class="w-[600px] mx-auto bg-white rounded-md overflow-hidden shadow-md mb-10"
 	>
 		<div class="p-4">
-			<h2 class="text-lg font-semibold mb-4">Ingresar Datos del usuario</h2>
 			<form on:submit|preventDefault={handleSubmit}>
-				<div class="grid grid-cols-2 gap-4">
-					<div>
-						<label
-							for="usuario"
-							class="block text-sm font-medium text-gray-700"
-						>
-							Usuario
-						</label>
-						<input
-							id="usuario"
-							name="usuario"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={usuario.usuario}
-						/>
-					</div>
-					<div>
-						<label for="clave" class="block text-sm font-medium text-gray-700">
-							Clave
-						</label>
-						<input
-							id="clave"
-							name="clave"
-							type="password"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={usuario.clave}
-						/>
-					</div>
+				<!-- <div class="grid grid-cols-2 gap-4"> -->
+				<div>
+					<label
+						for="usuario"
+						class="block text-sm font-medium text-gray-700"
+					>
+						Usuario
+					</label>
+					<input
+						id="usuario"
+						name="usuario"
+						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+						bind:value={usuario.usuario}
+					/>
 				</div>
 
 				<div class="grid grid-cols-2 gap-4">

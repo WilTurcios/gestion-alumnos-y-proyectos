@@ -3,6 +3,9 @@
 require_once 'schemas/Proyecto.php';
 require_once 'schemas/Empresa.php';
 require_once 'schemas/Usuario.php';
+require_once 'schemas/Estudiante.php';
+require_once 'models/Empresas.php';
+require_once 'models/Estudiantes.php';
 require_once 'exceptions/NotFoundException.php';
 
 class ProjectModel
@@ -26,6 +29,15 @@ class ProjectModel
     } catch (Exception $ex) {
       echo "Ha ocurrido un error: " . $ex->getMessage();
     }
+  }
+
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM proyectos";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
   }
 
   public function save(Proyecto $proyecto): Proyecto | false
@@ -199,13 +211,15 @@ class ProjectModel
 
   public function getAll(): array | false
   {
-    $query = "SELECT * FROM proyectos p INNER JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto";
+    $query = "
+      SELECT p.*, ap.id_alumno FROM proyectos p 
+        LEFT JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto
+    ";
     $result = $this->connection->query($query);
 
     if (!$result) return false;
     if ($result->num_rows === 0) return [];
 
-    $idsProyectos = [];
     $proyectos = [];
 
     $companyModel = new CompanyModel();
@@ -213,17 +227,16 @@ class ProjectModel
     $studentModel = new StudentModel();
 
     while ($row = $result->fetch_assoc()) {
-      if (in_array($row['id'], $idsProyectos)) {
-        $proyectos[$row['id']]->estudiantes[] = $studentModel->getById($row['id_alumno']);
-      } else {
-        $idsProyectos[] = $row['id'];
+      $proyectoId = $row['id'];
+
+      if (!array_key_exists($proyectoId, $proyectos)) {
 
         $empresa = $companyModel->getById($row['id_empresa']);
-        $asesor = $userModel->getById($row['id_asesor']);
-        $alumno = $studentModel->getById($row['id_alumno']);
-        $creado_por = new Usuario($row['creado_por']);
-        $proyecto = new Proyecto(
-          $row['id'],
+        $asesor = $userModel->getById(new Usuario($row['id_asesor']));
+        $creado_por = $userModel->getById(new Usuario($row['creado_por']));
+
+        $proyectos[$proyectoId] = new Proyecto(
+          $proyectoId,
           $row['tema'],
           $empresa,
           $asesor,
@@ -238,15 +251,19 @@ class ProjectModel
           $row['fecha_presentacion'],
           $row['doc'],
           $creado_por,
-          [$alumno]
+          [] // Inicializamos la lista de estudiantes vacía
         );
+      }
 
-        $proyectos[$row['id']] = $proyecto;
+      if ($row['id_alumno']) {
+        $alumno = $studentModel->getById(new Estudiante($row['id_alumno']));
+        $proyectos[$proyectoId]->estudiantes[] = $alumno;
       }
     }
 
     return array_values($proyectos);
   }
+
 
   public function getById(int $id_proyecto): Proyecto | false
   {
@@ -375,7 +392,7 @@ class ProjectModel
   {
     if (!$topic) return false;
 
-    $query = "SELECT * FROM proyectos p INNER JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto WHERE tema LIKE ?";
+    $query = "SELECT * FROM proyectos p LEFT JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto WHERE LOWER(p.tema) LIKE ?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
@@ -388,25 +405,22 @@ class ProjectModel
 
     if (!$result || $result->num_rows === 0) return [];
 
-    $idsProyectos = [];
     $proyectos = [];
-
     $companyModel = new CompanyModel();
     $userModel = new UserModel();
     $studentModel = new StudentModel();
 
     while ($row = $result->fetch_assoc()) {
-      if (in_array($row['id'], $idsProyectos)) {
-        $proyectos[$row['id']]->estudiantes[] = $studentModel->getById($row['id_alumno']);
-      } else {
-        $idsProyectos[] = $row['id'];
+      $proyectoId = $row['id'];
+
+      if (!array_key_exists($proyectoId, $proyectos)) {
 
         $empresa = $companyModel->getById($row['id_empresa']);
-        $asesor = $userModel->getById($row['id_asesor']);
-        $alumno = $studentModel->getById($row['id_alumno']);
-        $creado_por = new Usuario($row['creado_por']);
-        $proyecto = new Proyecto(
-          $row['id'],
+        $asesor = $userModel->getById(new Usuario($row['id_asesor']));
+        $creado_por = $userModel->getById(new Usuario($row['creado_por']));
+
+        $proyectos[$proyectoId] = new Proyecto(
+          $proyectoId,
           $row['tema'],
           $empresa,
           $asesor,
@@ -421,10 +435,13 @@ class ProjectModel
           $row['fecha_presentacion'],
           $row['doc'],
           $creado_por,
-          [$alumno]
+          [] // Inicializamos la lista de estudiantes vacía
         );
+      }
 
-        $proyectos[$row['id']] = $proyecto;
+      if ($row['id_alumno']) {
+        $alumno = $studentModel->getById(new Estudiante($row['id_alumno']));
+        $proyectos[$proyectoId]->estudiantes[] = $alumno;
       }
     }
 

@@ -19,6 +19,8 @@
 	import { AuthenticatedUser } from './store/AuthenticatedUserStore'
 	import Login from './pages/auth/Login.svelte'
 	import Backup from './pages/backup/Backup.svelte'
+	import Subjects from './pages/Materias/Subjects.svelte'
+	import Projects from './pages/proyectos/Projects.svelte'
 
 	if ($AuthenticatedUser === null) {
 		navigate('/login', { replace: true })
@@ -40,10 +42,28 @@
 			<Route path="/estudiantes">
 				<Students />
 			</Route>
-			<Route path="/estudiantes/agregar_estudiante">
+			<!-- <Route path="/estudiantes/agregar_estudiante">
+			<AddSubject />
+		</Route>
+		<Route path="/estudiantes/:id" let:params>
+			<EditSubject current_student_id={params.id} />
+		</Route> -->
+			<Route path="/proyectos">
+				<Projects />
+			</Route>
+			<!-- <Route path="/proyectos/agregar_proyecto">
+			<AddProject />
+		</Route>
+		<Route path="/proyectos/:id" let:params>
+			<EditProject current_student_id={params.id} />
+		</Route> -->
+			<Route path="/materias">
+				<Subjects />
+			</Route>
+			<Route path="/materias/agregar_materia">
 				<AddStudent />
 			</Route>
-			<Route path="/estudiantes/:id" let:params>
+			<Route path="/materias/:id" let:params>
 				<EditStudent current_student_id={params.id} />
 			</Route>
 			<Route path="/grupos">

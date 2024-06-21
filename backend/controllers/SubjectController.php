@@ -3,7 +3,7 @@
 namespace Controllers;
 
 require_once 'schemas/Response.php';
-require_once 'models/mysql/MateriaModel.php';
+require_once 'models/Materias.php';
 require_once 'exceptions/ParameterIsMissingException.php';
 require_once 'exceptions/UnauthorizedRequestException.php';
 require_once 'exceptions/BadRequestException.php';
@@ -11,6 +11,7 @@ require_once 'exceptions/NotFoundException.php';
 require_once 'exceptions/InternalServerErrorException.php';
 
 use BadRequestException;
+use InternalServerErrorException;
 use Response;
 use Materia;
 use InternalServerErrorExeception;
@@ -42,7 +43,7 @@ class SubjectController
     return $this->requiredParameters;
   }
 
-  public function createMateria(array $materia_data): Response
+  public function createSubject(array $materia_data): Response
   {
     $requiredParameters = $this->getRequiredParameters();
 
@@ -96,7 +97,7 @@ class SubjectController
     }
   }
 
-  public function deleteMateria(array $materia_data): Response
+  public function deleteSubject(array $materia_data): Response
   {
     $materiaId = $materia_data['id'] ?? null;
 
@@ -127,7 +128,7 @@ class SubjectController
     }
   }
 
-  public function deleteManyMaterias(?array $materias): Response
+  public function deleteManySubjects(?array $materias): Response
   {
     if (is_null($materias)) {
       throw new BadRequestException(
@@ -165,7 +166,7 @@ class SubjectController
     return new Response(true, 204, 'Las materias han sido eliminadas correctamente');
   }
 
-  public function updateMateria(array $materia_data): Response
+  public function updateSubject(array $materia_data): Response
   {
     $materiaId = $materia_data['id'] ?? null;
 
@@ -209,7 +210,7 @@ class SubjectController
     }
   }
 
-  public function getAllMaterias(): Response
+  public function getAllSubjects(): Response
   {
     $result = $this->materiaService->getAll();
 
@@ -226,7 +227,7 @@ class SubjectController
     }
   }
 
-  public function getMateriaById(?int $materiaId): Response
+  public function getSubjectById(?int $materiaId): Response
   {
     if (!$materiaId) {
       throw new BadRequestException(
@@ -245,7 +246,7 @@ class SubjectController
     }
   }
 
-  public function getMateriaByName(?string $nombre): Response
+  public function getSubjectByName(?string $nombre): Response
   {
     if (!$nombre) {
       throw new BadRequestException(
@@ -255,10 +256,10 @@ class SubjectController
 
     $result = $this->materiaService->getByName($nombre);
 
-    if (is_array($result) && !empty($result)) {
+    if (is_array($result)) {
       return new Response(true, 200, 'Materias obtenidas exitosamente', $result);
     } else {
-      throw new InternalServerErrorExeception(
+      throw new InternalServerErrorException(
         'Internal Server Error: Ha ocurrido un error al obtener las materias, por favor intenta de nuevo'
       );
     }

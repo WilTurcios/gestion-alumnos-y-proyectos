@@ -30,7 +30,7 @@ function logIn($user_name, $clave, $usersController)
   return $result;
 }
 
-function getAuthenticatedUser($usersController)
+function getAuthenticatedUser()
 {
   if (!isset($_SESSION['usuario'])) return new Response(
     false,
@@ -55,18 +55,31 @@ $json_data = file_get_contents('php://input');
 $data = ($json_data && !empty($json_data)) ? json_decode($json_data, true) : null;
 
 
-if ($method !== 'POST') return new Response(
-  false,
-  400,
+if ($method !== 'POST') throw new BadRequestException(
   'Para autenticarse o cerrar sesión se debe hacer uso del metodo POST'
 );
 
-$response = match ($action) {
-  'login' => logIn($data['user_name'], $data['clave'], $usersController),
-  'usuario_autenticado' => getAuthenticatedUser($usersController),
-  'logout' => logout(),
-  'change_password' => changePassword($data['new_password'], $data['current_password'])
-};
+$action = $id;
+
+switch ($action) {
+  case 'login':
+    $response = logIn($data['user_name'], $data['clave'], $usersController);
+    break;
+  case 'usuario_autenticado':
+    $response = getAuthenticatedUser();
+    break;
+  case 'logout':
+    $response = logout();
+    break;
+  case 'change_password':
+    $response = changePassword($data['new_password'], $data['current_password']);
+    break;
+  default:
+    // Manejar el caso en que la acción no coincide con ninguna opción
+    throw new InternalServerErrorException('Internal Server Error: No se pudo realizar la acción');
+    break;
+}
+
 
 http_response_code($response->status_code);
 echo json_encode($response->data);

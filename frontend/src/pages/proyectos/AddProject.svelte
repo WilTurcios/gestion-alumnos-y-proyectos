@@ -2,6 +2,7 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
+	import { Users } from '../../store/UsersStore.js'
 	import { addUser } from '../../services/UserService'
 
 	let toastElement = null
@@ -10,13 +11,13 @@
 	$: showToast = false
 
 	let usuario = {
-		usuario: null,
+		nombre_usuario: null,
 		clave: null,
 		nombres: null,
 		apellidos: null,
 		carnet_docente: null,
 		email: null,
-		telefono: null,
+		tel: null,
 		celular: null,
 		sexo: null,
 		es_jurado: false,
@@ -27,15 +28,15 @@
 
 	function handleSubmit() {
 		addUser(usuario)
-			.then(() => {
+			.then(res => {
 				usuario = {
-					usuario: null,
+					nombre_usuario: null,
 					clave: null,
 					nombres: null,
 					apellidos: null,
 					carnet_docente: null,
 					email: null,
-					telefono: null,
+					tel: null,
 					celular: null,
 					sexo: null,
 					es_jurado: false,
@@ -43,6 +44,7 @@
 					acceso_sistema: false,
 					es_admin: false
 				}
+
 				showToast = true
 				toastText = 'Usuario creado correctamente'
 				variant = 'success'
@@ -64,16 +66,16 @@
 				<div class="grid grid-cols-2 gap-4">
 					<div>
 						<label
-							for="usuario"
+							for="nombre_usuario"
 							class="block text-sm font-medium text-gray-700"
 						>
 							Usuario
 						</label>
 						<input
-							id="usuario"
-							name="usuario"
+							id="nombre_usuario"
+							name="nombre_usuario"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={usuario.usuario}
+							bind:value={usuario.nombre_usuario}
 						/>
 					</div>
 					<div>
@@ -173,7 +175,7 @@
 							id="telefono"
 							name="telefono"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={usuario.telefono}
+							bind:value={usuario.tel}
 						/>
 					</div>
 					<div>

@@ -8,7 +8,7 @@ use Controllers\UserController;
 
 $usersController = new UserController(new UserModel());
 
-$response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');
+$response = null;
 
 $json_data = file_get_contents('php://input');
 
@@ -26,15 +26,33 @@ if (!is_null($params)) {
   $pages = (!$params && array_key_exists('pages', $params)) ? $params['pages'] : 0;
 }
 
-$response = match (true) {
-  $method === 'GET' && $id => $usersController->getUserByID($id),
-  $method === 'GET' && ($nombres || $apellidos) => $usersController->getUserByName($nombres, $apellidos),
-  $method === 'GET' => $usersController->getUsers(),
-  $method === 'POST' => $usersController->createUser($data),
-  $method === 'PUT' => $response = $usersController->updateUser($data),
-  $method === 'DELETE' && $ids !== null => $usersController->deleteManyUsers($ids),
-  $method === 'DELETE' => $usersController->deleteUser($data)
-};
+switch (true) {
+  case $method === 'GET' && $id:
+    $response = $usersController->getUserByID($id);
+    break;
+  case $method === 'GET' && ($nombres || $apellidos):
+    $response = $usersController->getUserByName($nombres, $apellidos);
+    break;
+  case $method === 'GET':
+    $response = $usersController->getUsers();
+    break;
+  case $method === 'POST':
+    $response = $usersController->createUser($data);
+    break;
+  case $method === 'PUT':
+    $response = $usersController->updateUser($data);
+    break;
+  case $method === 'DELETE' && $id:
+    $response = $usersController->deleteUserById($id);
+    break;
+  case $method === 'DELETE' && $ids !== null:
+    $response = $usersController->deleteManyUsers($ids);
+    break;
+  default:
+    $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');
+    break;
+}
+
 
 http_response_code($response->status_code);
 echo json_encode($response->data);

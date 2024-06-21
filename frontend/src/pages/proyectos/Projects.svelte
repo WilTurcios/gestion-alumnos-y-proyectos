@@ -1,17 +1,23 @@
 <script>
-	import { Link } from 'svelte-routing'
+	import { Link, navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import { Users } from '../../store/UsersStore.js'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { getUsers } from '../../services/UserService'
+	import { deleteProjectById, getProjects } from '../../services/ProjectService'
+	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
 
 	let toastElement = null
 	let showToast = false
 	let toastText = 'Registro eliminado correctament'
 	let variant = 'danger'
+	let timer
 
-	$: usuarios = getUsers()
+	if ($AuthenticatedUser === null) {
+		navigate('/login', { replace: true })
+	}
+
+	$: proyectos = getProjects()
 
 	let ids_usuarios = {
 		ids: []
@@ -26,11 +32,30 @@
 	}
 
 	const handleDelete = id => e => {
-		Users.deleteUsers(id).then(() => {
-			showToast = true
-			toastText = 'Usuario eliminado correctamente'
-			variant = 'success'
-		})
+		deleteProjectById(id)
+
+		proyectos = getProjects()
+	}
+
+	function handleSearch(event) {
+		const search = event.target.value
+		if (!search) {
+			proyectos = getProjects()
+		}
+
+		clearTimeout(timer) // Usa clearTimeout en lugar de clearInterval
+
+		timer = setTimeout(() => {
+			fetch(
+				`http://localhost/proyecto-DAW/backend/api/proyectos?tema=${search}`
+			)
+				.then(res => {
+					proyectos = res.json()
+				})
+				.catch(error => {
+					console.error('Error fetching projects:', error)
+				})
+		}, 750)
 	}
 </script>
 
@@ -48,6 +73,7 @@
 					type="text"
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
 					placeholder="Buscar usuarios..."
+					on:keyup={handleSearch}
 				/>
 			</form>
 			<div class="flex gap-2 justify-between items-center">
@@ -83,41 +109,43 @@
 		title="Registros de usuarios"
 	>
 		<tbody class="text-xs">
-			{#await usuarios}
-				<p>Cargango usuarios...</p>
-			{:then usuarios}
-				{#each usuarios as user}
+			{#await proyectos}
+				<p>Cargango proyectos...</p>
+			{:then proyectos}
+				{#each proyectos as project}
 					<tr>
 						<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
 							<input
 								type="checkbox"
 								bind:group={ids_usuarios.ids}
-								value={user.id}
+								value={project.id}
 							/>
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.usuario}
+							{project.tema}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.clave}
+							{project.empresa.nombre}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.nombres}
+							{project.asesor.nombres}
+							{project.asesor.apellidos}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.apellidos}
+							{project.estado}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.carnet_docente}
+							{project.creado_por.nombres}
+							{project.creado_por.apellidos}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.tel}
+							{project.tel}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.celular}
+							{project.fecha_presentacion}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.email}
+							{project.email}
 						</td>
 						<td
 							class="px-2 py-2 whitespace-nowrap flex justify-between items-center"
@@ -125,11 +153,11 @@
 							<button
 								type="button"
 								class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-								on:click={handleDelete(user.id)}>Eliminar</button
+								on:click={handleDelete(project.id)}>Eliminar</button
 							>
 							<div class="flex gap-2 justify-between items-center">
 								<Link
-									to="/usuarios/{user.id}"
+									to="/usuarios/{project.id}"
 									class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
 								>
 									Editar Usuario

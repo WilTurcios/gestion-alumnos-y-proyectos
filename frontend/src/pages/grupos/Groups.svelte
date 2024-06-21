@@ -4,6 +4,7 @@
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
 	import { Groups } from '../../store/GroupsStore.js'
+	import { getGroupById, getGroups } from '../../services/GroupService'
 
 	let toastElement = null
 	let toastText = 'El grupo se ha creado correctamente'
@@ -13,6 +14,8 @@
 	let search = ''
 	let timer
 
+	$: grupos = getGroups()
+
 	const debounce = v => {
 		clearTimeout(timer)
 		timer = setTimeout(() => {
@@ -21,7 +24,7 @@
 	}
 
 	let grupo = {
-		grupo: null
+		nombre: null
 	}
 
 	let ids_grupos = {
@@ -36,10 +39,6 @@
 		})
 	}
 
-	const searchGroup = search => {
-		fetch('http://localhost/proyecto-DAW/backend/api/grupos?nombre=')
-	}
-
 	const handleDelete = id => () => {
 		Groups.deleteGroup(id)
 			.then(() => {
@@ -52,7 +51,24 @@
 			})
 	}
 
-	const handleOnChange = e => {}
+	function handleSearch(event) {
+		const search = event.target.value
+		if (!search) {
+			grupos = getGroups()
+		}
+
+		clearTimeout(timer)
+
+		timer = setTimeout(() => {
+			fetch(`http://localhost/proyecto-DAW/backend/api/grupos?nombre=${search}`)
+				.then(res => {
+					grupos = res.json()
+				})
+				.catch(error => {
+					console.error('Error fetching groups:', error)
+				})
+		}, 750)
+	}
 </script>
 
 <Container>
@@ -60,15 +76,11 @@
 		<h2 class="text-3xl text-light font-semibold mb-4">Grupos</h2>
 		<div class="flex gap-2 justify-between items-center">
 			<form class="flex gap-2 justify-between items-center">
-				<button
-					class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-green-600"
-				>
-					Buscar
-				</button>
 				<input
 					type="text"
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
 					placeholder="Buscar grupos..."
+					on:keyup={handleSearch}
 				/>
 			</form>
 			<div class="flex gap-2 justify-between items-center">
@@ -94,35 +106,39 @@
 		title="Registros de Grupos"
 	>
 		<tbody class="text-xs">
-			{#each $Groups as group}
-				<tr>
-					<td class="px-4 py-2 whitespace-nowrap min-w-max">
-						<input
-							type="checkbox"
-							bind:group={ids_grupos.ids}
-							value={group.id}
-						/>
-					</td>
-					<td class="min-w-max px-4 py-2 whitespace-nowrap">
-						{group.nombre_grupo}
-					</td>
-					<td
-						class="px-4 py-2 whitespace-nowrap flex justify-center items-center"
-					>
-						<button
-							type="button"
-							class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-							on:click={handleDelete(group.id)}>Eliminar</button
+			{#await grupos}
+				<p>Carfando grupos...</p>
+			{:then grupos}
+				{#each grupos as group}
+					<tr>
+						<td class="px-4 py-2 whitespace-nowrap min-w-max">
+							<input
+								type="checkbox"
+								bind:group={ids_grupos.ids}
+								value={group.id}
+							/>
+						</td>
+						<td class="min-w-max px-4 py-2 whitespace-nowrap">
+							{group.nombre}
+						</td>
+						<td
+							class="px-4 py-2 whitespace-nowrap flex justify-center items-center"
 						>
-						<Link
-							to="/grupos/{group.id}"
-							class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
-						>
-							Editar
-						</Link>
-					</td>
-				</tr>
-			{/each}
+							<button
+								type="button"
+								class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+								on:click={handleDelete(group.id)}>Eliminar</button
+							>
+							<Link
+								to="/grupos/{group.id}"
+								class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+							>
+								Editar
+							</Link>
+						</td>
+					</tr>
+				{/each}
+			{/await}
 		</tbody>
 	</Table>
 </Container>

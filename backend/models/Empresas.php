@@ -26,9 +26,18 @@ class CompanyModel
     }
   }
 
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM empresas";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
+  }
+
   public function save(Empresa $empresa): Empresa | false
   {
-    $query = "INSERT INTO empresas (nombre, contacto, direccion, email, telefono, creado_por) VALUES (?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO empresas (empresa, contacto, direccion, email, telefono, creado_por) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
@@ -151,7 +160,7 @@ class CompanyModel
     while ($row = $result->fetch_assoc()) {
       $empresa = new Empresa(
         $row['id'],
-        $row['nombre'],
+        $row['empresa'],
         $row['contacto'],
         $row['direccion'],
         $row['email'],
@@ -184,7 +193,7 @@ class CompanyModel
 
     $empresa = new Empresa(
       $row['id'],
-      $row['nombre'],
+      $row['empresa'],
       $row['contacto'],
       $row['direccion'],
       $row['email'],
@@ -196,35 +205,38 @@ class CompanyModel
     return $empresa;
   }
 
-  public function getByName(?string $nombre): Empresa | false
+  public function getByName(?string $empresa): array | false
   {
-    if (!$nombre) return false;
+    if (!$empresa) return false;
 
-    $query = "SELECT * FROM empresas WHERE nombre LIKE ?";
+    $query = "SELECT * FROM empresas WHERE empresa LIKE ?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
 
-    $stmt->bind_param("s", "%$nombre%");
+    $likeCompany =  "%$empresa%";
+    $stmt->bind_param("s", $likeCompany);
     $stmt->execute();
 
     $result = $stmt->get_result();
 
     if (!$result || $result->num_rows === 0) return [];
 
-    $row = $result->fetch_assoc();
+    $empresas = [];
 
-    $empresa = new Empresa(
-      $row['id'],
-      $row['nombre'],
-      $row['contacto'],
-      $row['direccion'],
-      $row['email'],
-      $row['telefono']
-    );
+    while ($row = $result->fetch_assoc()) {
+      $empresa = new Empresa(
+        $row['id'],
+        $row['empresa'],
+        $row['contacto'],
+        $row['direccion'],
+        $row['email'],
+        $row['telefono']
+      );
 
-    $stmt->close();
+      $empresas[] = $empresa;
+    }
 
-    return $empresa;
+    return $empresas;
   }
 }

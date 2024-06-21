@@ -7,6 +7,8 @@
 	<Link to="/usuarios">Usuarios</Link>
 	<Link to="/empresas">Empresas</Link>
 	<Link to="/estudiantes">Estudiantes</Link>
+	<Link to="/materias">Materias</Link>
+	<Link to="/proyectos">Proyectos</Link>
 	<Link to="/grupos">Grupos</Link>
 	<Link to="/backup">Copia de Seguridad</Link>
 	<Link to="/perfil">Perfil</Link>

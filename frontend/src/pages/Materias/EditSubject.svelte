@@ -3,37 +3,55 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
 	import { Companies } from '../../store/CompaniesStore'
-	import { addCompany } from '../../services/CompanyService'
+	import { addSubject } from '../../services/SubjectService'
+
+	export let currentCompanyId
 
 	let toastElement = null
-	let toastText = 'La empresa se ha registrado correctamente'
+	let toastText = 'La materia se ha registrado correctamente'
 	let variant = 'success'
 	$: showToast = false
 
-	let empresa = {
-		empresa: null,
+	let materia = {
+		nombre: null,
 		contacto: null,
 		direccion: null,
 		email: null,
 		telefono: null
 	}
 
+	const getById = id => {
+		fetch(`http://localhost/proyecto-DAW/backend/api/materias/${id}`)
+			.then(res => {
+				return res.json()
+			})
+			.then(company => {
+				materia.materia = company[0].materia
+				materia.contacto = company[0].contacto
+				materia.direccion = company[0].direccion
+				materia.email = company[0].email
+				materia.telefono = company[0].telefono
+			})
+	}
+
+	getById(currentCompanyId)
+
 	function handleSubmit(e) {
-		addCompany(empresa).then(company => {
-			empresa = {
-				empresa: null,
+		addSubject(materia).then(company => {
+			materia = {
+				nombre: null,
 				contacto: null,
 				direccion: null,
 				email: null,
 				telefono: null
 			}
 
-			toastText = 'La empresa ha sido registrada exitosamente'
+			toastText = 'La materia ha sido actualizado exitosamente'
 			variant = 'success'
 			showToast = true
 
 			setTimeout(() => {
-				navigate('/empresas', { replace: true })
+				navigate('/materias', { replace: true })
 			}, 1500)
 		})
 	}
@@ -44,18 +62,18 @@
 		class="w-[600px] mx-auto bg-white rounded-md overflow-hidden shadow-md mb-10"
 	>
 		<div class="p-4">
-			<h2 class="text-lg font-semibold mb-4">Ingresar Datos del empresa</h2>
+			<h2 class="text-lg font-semibold mb-4">Ingresar Datos del materia</h2>
 			<form on:submit|preventDefault={handleSubmit}>
 				<div class="grid grid-cols-2 gap-4">
 					<div>
 						<label for="nombre" class="block text-sm font-medium text-gray-700">
-							Nombre de la empresa
+							Nombre de la materia
 						</label>
 						<input
 							id="nombre"
 							name="nombre"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.empresa}
+							bind:value={materia.materia}
 						/>
 					</div>
 					<div>
@@ -63,13 +81,13 @@
 							for="contacto"
 							class="block text-sm font-medium text-gray-700"
 						>
-							Contacto de la empresa
+							Contacto de la materia
 						</label>
 						<input
 							id="contacto"
 							name="contacto"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.contacto}
+							bind:value={materia.contacto}
 						/>
 					</div>
 				</div>
@@ -85,7 +103,7 @@
 							id="direccion"
 							name="direccion"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.direccion}
+							bind:value={materia.direccion}
 						/>
 					</div>
 					<div>
@@ -99,7 +117,7 @@
 							id="telefono"
 							name="telefono"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.telefono}
+							bind:value={materia.telefono}
 						/>
 					</div>
 				</div>
@@ -113,7 +131,7 @@
 						name="email"
 						type="email"
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-						bind:value={empresa.email}
+						bind:value={materia.email}
 					/>
 				</div>
 

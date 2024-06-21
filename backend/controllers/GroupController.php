@@ -216,6 +216,6 @@ class GroupController
       'Ha ocurrido un error al obtener el grupo'
     );
 
-    return new Response(true, 200, 'Grupo obtenido exitosamente', [$result]);
+    return new Response(true, 200, 'Grupo obtenido exitosamente', $result);
   }
 }

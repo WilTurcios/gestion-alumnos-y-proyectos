@@ -1,5 +1,6 @@
 <?php
 
+require_once 'schemas/Grupo.php';
 
 class GroupModel
 {
@@ -30,6 +31,15 @@ class GroupModel
   private function getValoresInsert()
   {
     return '?';
+  }
+
+  public function getTotalCount()
+  {
+    $query = "SELECT COUNT(*) as total FROM grupos";
+    $result = $this->connection->query($query);
+
+    $result = $result->fetch_assoc();
+    return $result['total'];
   }
 
   public function save(Grupo $grupo): Grupo | false
@@ -207,32 +217,36 @@ class GroupModel
     return $result;
   }
 
-  public static function getByName(string $nombre): Grupo | false
+  public static function getByName(string $nombre): array | false
   {
     $connection = (new self())->connection;
-    $query = "SELECT * FROM grupos WHERE grupo LIKE '%$nombre%' ;";
+    $query = "SELECT * FROM grupos WHERE nombre LIKE '%$nombre%' ;";
     $result = $connection->query($query);
 
-    if (!$result) return [];
+    $grupos = [];
 
-    if (!$result || !($result->num_rows === 0)) {
+    if (!$result) return $grupos;
+
+    if (!$result || $result->num_rows === 0) {
       $connection->close();
       return false;
     }
 
-    $row = $result->fetch_assoc();
+    while ($row = $result->fetch_assoc()) {
+      $grupo = new Grupo(
+        $row["id"],
+        $row["nombre"]
+      );
 
-    $grupo = new Grupo(
-      $row["id"],
-      $row["nombre"]
-    );
-
+      $grupos[] = $grupo;
+    }
     $connection->close();
-    return $grupo;
+
+    return $grupos;
   }
 }
 
 
-// $grupo = MySQLGroupsService::getByName('soft12');
+// $grupo = GroupModel::getByName('soft');
 
 // echo json_encode($grupo);

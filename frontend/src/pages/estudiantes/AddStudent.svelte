@@ -4,6 +4,7 @@
 	import { Students } from '../../store/StudentsStore'
 	import { Groups } from '../../store/GroupsStore.js'
 	import { navigate } from 'svelte-routing'
+	import { addStudent } from '../../services/StudentService'
 
 	let toastElement = null
 	let toastText = 'El alumno se ha creado correctamente'
@@ -28,7 +29,7 @@
 	}
 
 	function handleSubmit(e) {
-		Students.addStudent(estudiante).then(student => {
+		addStudent(estudiante).then(student => {
 			estudiante.carnet = null
 			estudiante.nombres = null
 			estudiante.apellidos = null

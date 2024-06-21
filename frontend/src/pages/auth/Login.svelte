@@ -3,6 +3,7 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
 	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore.js'
+	import { login } from '../../services/UserService'
 
 	let toastElement = null
 	let toastText = 'El alumno se ha creado correctamente'
@@ -15,8 +16,8 @@
 	}
 
 	function handleSubmit(e) {
-		AuthenticatedUser.login(usuario)
-			.then(() => {
+		login(usuario)
+			.then(usuario => {
 				usuario.user_name = null
 				usuario.clave = null
 
@@ -24,6 +25,9 @@
 				variant = 'success'
 				showToast = true
 
+				AuthenticatedUser.set(usuario)
+
+				console.log($AuthenticatedUser)
 				setTimeout(() => {
 					navigate('/home', { replace: true })
 				}, 1000)
