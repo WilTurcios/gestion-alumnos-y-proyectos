@@ -3,8 +3,7 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Subjects } from '../../store/SubjectsStore'
-	import { getSubjects } from '../../services/SubjectService'
+	import { deleteSubjectById, getSubjects } from '../../services/SubjectService'
 
 	let toastElement = null
 	let toastText = 'La empresa se ha registrado correctamente'
@@ -19,15 +18,15 @@
 	$: materias = getSubjects()
 
 	const handleDeleteMultiple = () => {
-		Subjects.deleteMutlipleSubjects(ids_materias.ids).then(() => {
-			showToast = true
-			toastText = 'Estudiantes eliminados correctamente'
-			variant = 'danger'
-		})
+		// Subjects.deleteMutlipleSubjects(ids_materias.ids).then(() => {
+		// 	showToast = true
+		// 	toastText = 'Estudiantes eliminados correctamente'
+		// 	variant = 'danger'
+		// })
 	}
 
 	const handleDelete = id => e => {
-		Subjects.deleteSubject(id).then(() => {
+		deleteSubjectById(id).then(() => {
 			showToast = true
 			toastText = 'Registro eliminado correctament'
 			variant = 'danger'
@@ -58,22 +57,22 @@
 
 <Container>
 	<header class="w-full flex justify-between items-center">
-		<h2 class="text-3xl text-light font-semibold mb-4">Empresas</h2>
+		<h2 class="text-3xl text-light font-semibold mb-4">Materias</h2>
 		<div class="flex gap-2 justify-between items-center">
 			<form class="flex gap-2 justify-between items-center">
 				<input
 					type="text"
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
-					placeholder="Buscar empresas..."
+					placeholder="Buscar materias..."
 					on:keyup={handleSearch}
 				/>
 			</form>
 			<div class="flex gap-2 justify-between items-center">
 				<Link
-					to="/empresas/agregar_empresa"
+					to="/materias/agregar_materia"
 					class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
 				>
-					Agregar Empresa
+					Agregar Materia
 				</Link>
 				<button
 					class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
@@ -89,10 +88,12 @@
 		headers={[
 			'Acción Multiple',
 			'Nombre',
-			'Contacto',
-			'Direccion',
-			'Telefono',
-			'Correo Electrónico'
+			'Porcentaje',
+			'Porcentaje Individual',
+			'Porcentaje Grupal',
+			'Fecha Inicio',
+			'Fecha Fin',
+			'Acciones'
 		]}
 		title="Registros de empresas"
 	>
@@ -128,7 +129,7 @@
 								{subject.fecha_inicio}
 							</td>
 							<td class="px-4 py-2 whitespace-nowrap">
-								{subject.fecha_fin}
+								{subject.fecha_fin ?? 'No especificada'}
 							</td>
 							<td
 								class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
@@ -136,13 +137,21 @@
 								<button
 									type="button"
 									class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-									on:click={handleDelete(subject.id)}>Eliminar</button
+									on:click={handleDelete(subject.id)}
 								>
+									Eliminar
+								</button>
 								<Link
-									to="/empresas/{subject.id}"
+									to="/materias/{subject.id}"
 									class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
 								>
 									Editar
+								</Link>
+								<Link
+									to="/materias/gestionar_criterios/{JSON.stringify(subject)}"
+									class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
+								>
+									Gestionar Criterios
 								</Link>
 							</td>
 						</tr>

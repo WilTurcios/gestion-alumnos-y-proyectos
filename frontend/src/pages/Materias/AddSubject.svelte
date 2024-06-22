@@ -2,40 +2,49 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
-	import { addCompany } from '../../services/CompanyService'
+	import { addSubject } from '../../services/SubjectService'
 
 	let toastElement = null
-	let toastText = 'La empresa se ha registrado correctamente'
-	let variant = 'success'
+	let toastText = 'La materia se ha creado correctamente'
+	let variant = 'warning'
 	$: showToast = false
 
-	let empresa = {
-		empresa: null,
-		contacto: null,
-		direccion: null,
-		email: null,
-		telefono: null
+	let materia = {
+		nombre: '',
+		porcentaje: null,
+		porcentaje_individual: null,
+		porcentaje_grupal: null,
+		fecha_inicio: '',
+		fecha_fin: '',
+		activo: 'S',
+		tipo: '',
+		year: null
 	}
 
-	function handleSubmit(e) {
-		addCompany(empresa).then(company => {
-			empresa = {
-				empresa: null,
-				contacto: null,
-				direccion: null,
-				email: null,
-				telefono: null
-			}
-
-			toastText = 'La empresa ha sido registrada exitosamente'
-			variant = 'success'
+	const handleSubmit = async () => {
+		try {
+			await addSubject(materia)
+			Object.assign(materia, {
+				nombre: '',
+				porcentaje: null,
+				porcentaje_individual: null,
+				porcentaje_grupal: null,
+				fecha_inicio: '',
+				fecha_fin: '',
+				activo: 'S',
+				tipo: '',
+				year: null
+			})
 			showToast = true
-
-			setTimeout(() => {
-				navigate('/empresas', { replace: true })
-			}, 1500)
-		})
+			toastText = 'Materia creada correctamente'
+			variant = 'success'
+			navigate('/materias', { replace: true })
+		} catch (err) {
+			console.log(err)
+			showToast = true
+			toastText = 'Error al crear la materia'
+			variant = 'error'
+		}
 	}
 </script>
 
@@ -44,79 +53,139 @@
 		class="w-[600px] mx-auto bg-white rounded-md overflow-hidden shadow-md mb-10"
 	>
 		<div class="p-4">
-			<h2 class="text-lg font-semibold mb-4">Ingresar Datos del empresa</h2>
+			<h2 class="text-lg font-semibold mb-4">Ingresar Datos de la Materia</h2>
 			<form on:submit|preventDefault={handleSubmit}>
-				<div class="grid grid-cols-2 gap-4">
-					<div>
-						<label for="nombre" class="block text-sm font-medium text-gray-700">
-							Nombre de la empresa
-						</label>
-						<input
-							id="nombre"
-							name="nombre"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.empresa}
-						/>
-					</div>
-					<div>
-						<label
-							for="contacto"
-							class="block text-sm font-medium text-gray-700"
-						>
-							Contacto de la empresa
-						</label>
-						<input
-							id="contacto"
-							name="contacto"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.contacto}
-						/>
-					</div>
-				</div>
-				<div class="grid grid-cols-2 gap-4">
-					<div>
-						<label
-							for="direccion"
-							class="block text-sm font-medium text-gray-700"
-						>
-							Direccion
-						</label>
-						<input
-							id="direccion"
-							name="direccion"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.direccion}
-						/>
-					</div>
-					<div>
-						<label
-							for="telefono"
-							class="block text-sm font-medium text-gray-700"
-						>
-							Telefono
-						</label>
-						<input
-							id="telefono"
-							name="telefono"
-							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-							bind:value={empresa.telefono}
-						/>
-					</div>
-				</div>
-
 				<div>
-					<label for="email" class="block text-sm font-medium text-gray-700">
-						Correo Electrónico
+					<label for="nombre" class="block text-sm font-medium text-gray-700">
+						Nombre de la materia
 					</label>
 					<input
-						id="email"
-						name="email"
-						type="email"
+						id="nombre"
+						name="nombre"
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-						bind:value={empresa.email}
+						bind:value={materia.nombre}
 					/>
 				</div>
-
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label
+							for="porcentaje"
+							class="block text-sm font-medium text-gray-700"
+						>
+							Porcentaje
+						</label>
+						<input
+							id="porcentaje"
+							name="porcentaje"
+							type="number"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.porcentaje}
+						/>
+					</div>
+					<div>
+						<label
+							for="porcentaje_individual"
+							class="block text-sm font-medium text-gray-700"
+						>
+							Porcentaje Individual
+						</label>
+						<input
+							id="porcentaje_individual"
+							name="porcentaje_individual"
+							type="number"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.porcentaje_individual}
+						/>
+					</div>
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label
+							for="porcentaje_grupal"
+							class="block text-sm font-medium text-gray-700"
+						>
+							Porcentaje Grupal
+						</label>
+						<input
+							id="porcentaje_grupal"
+							name="porcentaje_grupal"
+							type="number"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.porcentaje_grupal}
+						/>
+					</div>
+					<div>
+						<label
+							for="fecha_inicio"
+							class="block text-sm font-medium text-gray-700"
+						>
+							Fecha de Inicio
+						</label>
+						<input
+							id="fecha_inicio"
+							name="fecha_inicio"
+							type="date"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.fecha_inicio}
+						/>
+					</div>
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label
+							for="fecha_fin"
+							class="block text-sm font-medium text-gray-700"
+						>
+							Fecha de Fin
+						</label>
+						<input
+							id="fecha_fin"
+							name="fecha_fin"
+							type="date"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.fecha_fin}
+						/>
+					</div>
+					<div>
+						<label for="activo" class="block text-sm font-medium text-gray-700">
+							Activo
+						</label>
+						<select
+							id="activo"
+							name="activo"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.activo}
+						>
+							<option value="S">Sí</option>
+							<option value="N">No</option>
+						</select>
+					</div>
+				</div>
+				<div class="grid grid-cols-2 gap-4">
+					<div>
+						<label for="tipo" class="block text-sm font-medium text-gray-700">
+							Tipo
+						</label>
+						<input
+							id="tipo"
+							name="tipo"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.tipo}
+						/>
+					</div>
+					<div>
+						<label for="year" class="block text-sm font-medium text-gray-700">
+							Año
+						</label>
+						<input
+							id="year"
+							name="year"
+							type="number"
+							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={materia.year}
+						/>
+					</div>
+				</div>
 				<div class="mt-6">
 					<button
 						type="submit"

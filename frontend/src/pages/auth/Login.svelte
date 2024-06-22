@@ -2,7 +2,6 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore.js'
 	import { login } from '../../services/UserService'
 
 	let toastElement = null
@@ -17,23 +16,25 @@
 
 	function handleSubmit(e) {
 		login(usuario)
-			.then(usuario => {
-				usuario.user_name = null
-				usuario.clave = null
+			.then(response => {
+				if (response.success) {
+					usuario.user_name = null
+					usuario.clave = null
 
-				toastText = 'El usuario ha iniciado sesión correctamente correctamente'
-				variant = 'success'
-				showToast = true
+					toastText = 'El usuario ha iniciado sesión correctamente'
+					variant = 'success'
+					showToast = true
 
-				AuthenticatedUser.set(usuario)
-
-				console.log($AuthenticatedUser)
-				setTimeout(() => {
-					navigate('/home', { replace: true })
-				}, 1000)
+					setTimeout(() => {
+						navigate('/home', { replace: true })
+						location.reload()
+					}, 750)
+				} else {
+					throw new Error('No tienes acceso al sistema')
+				}
 			})
 			.catch(err => {
-				toastText = err.message
+				toastText = err.message || 'Error desconocido al iniciar sesión'
 				variant = 'danger'
 				showToast = true
 
@@ -57,7 +58,6 @@
 			on:submit|preventDefault={handleSubmit}
 			class="shadow-lg rounded px-6 py-4"
 		>
-			<!-- <div class="grid grid-cols-2 gap-4"> -->
 			<div>
 				<label
 					for="nombre_usuario"
@@ -84,7 +84,6 @@
 					bind:value={usuario.clave}
 				/>
 			</div>
-
 			<div class="mt-6">
 				<button
 					type="submit"
@@ -96,10 +95,6 @@
 		</form>
 	</div>
 </div>
-
-<!-- <StudentsForm/> -->
-<!-- <div class="w-screen h-scree grid place-content-center"> -->
-<!-- </div> -->
 
 {#if showToast}
 	<Toast bind:toast={toastElement} text={toastText} {variant} bind:showToast />

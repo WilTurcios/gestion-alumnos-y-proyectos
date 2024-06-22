@@ -3,8 +3,11 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
-	import { getCompanies } from '../../services/CompanyService'
+	import {
+		deleteCompanyById,
+		getCompanies
+	} from '../../services/CompanyService'
+	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
 
 	let toastElement = null
 	let toastText = 'La empresa se ha registrado correctamente'
@@ -19,18 +22,20 @@
 	}
 
 	const handleDeleteMultiple = () => {
-		Companies.deleteMutlipleCompanies(ids_empresas.ids).then(() => {
-			showToast = true
-			toastText = 'Estudiantes eliminados correctamente'
-			variant = 'danger'
-		})
+		// Companies.deleteMutlipleCompanies(ids_empresas.ids).then(() => {
+		// 	showToast = true
+		// 	toastText = 'Estudiantes eliminados correctamente'
+		// 	variant = 'danger'
+		// })
 	}
 
 	const handleDelete = id => e => {
-		Companies.deleteCompany(id).then(() => {
+		deleteCompanyById(id).then(() => {
 			showToast = true
 			toastText = 'Registro eliminado correctament'
 			variant = 'danger'
+
+			empresas = getCompanies()
 		})
 	}
 

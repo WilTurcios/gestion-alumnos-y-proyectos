@@ -2,7 +2,7 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
+	import { updateCompany } from '../../services/CompanyService'
 
 	export let currentCompanyId
 
@@ -36,7 +36,7 @@
 	getById(currentCompanyId)
 
 	function handleSubmit(e) {
-		Companies.updateCompany(empresa).then(company => {
+		updateCompany(empresa).then(company => {
 			empresa = {
 				empresa: null,
 				contacto: null,

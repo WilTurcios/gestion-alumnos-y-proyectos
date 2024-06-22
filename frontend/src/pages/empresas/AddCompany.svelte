@@ -2,8 +2,9 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
 	import { addCompany } from '../../services/CompanyService'
+	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
+	import { getAuthenticatedUser } from '../../services/UserService'
 
 	let toastElement = null
 	let toastText = 'La empresa se ha registrado correctamente'
@@ -15,7 +16,8 @@
 		contacto: null,
 		direccion: null,
 		email: null,
-		telefono: null
+		telefono: null,
+		creado_por: $AuthenticatedUser.id
 	}
 
 	function handleSubmit(e) {
@@ -25,7 +27,8 @@
 				contacto: null,
 				direccion: null,
 				email: null,
-				telefono: null
+				telefono: null,
+				creado_por: $AuthenticatedUser.id
 			}
 
 			toastText = 'La empresa ha sido registrada exitosamente'

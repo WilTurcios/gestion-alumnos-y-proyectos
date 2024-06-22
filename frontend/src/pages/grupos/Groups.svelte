@@ -3,8 +3,7 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Groups } from '../../store/GroupsStore.js'
-	import { getGroupById, getGroups } from '../../services/GroupService'
+	import { deleteGroupById, getGroups } from '../../services/GroupService'
 
 	let toastElement = null
 	let toastText = 'El grupo se ha creado correctamente'
@@ -32,15 +31,15 @@
 	}
 
 	const handleDeleteMultiple = () => {
-		Groups.deleteMutlipleGroups(ids_grupos.ids).then(() => {
-			showToast = true
-			toastText = 'Grupos eliminados correctamente'
-			variant = 'success'
-		})
+		// Groups.deleteMutlipleGroups(ids_grupos.ids).then(() => {
+		// 	showToast = true
+		// 	toastText = 'Grupos eliminados correctamente'
+		// 	variant = 'success'
+		// })
 	}
 
 	const handleDelete = id => () => {
-		Groups.deleteGroup(id)
+		deleteGroupById(id)
 			.then(() => {
 				showToast = true
 				toastText = 'Grupo eliminado correctamente'

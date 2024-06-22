@@ -1,15 +1,16 @@
 <script>
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Students } from '../../store/StudentsStore'
-	import { Groups } from '../../store/GroupsStore.js'
 	import { navigate } from 'svelte-routing'
 	import { addStudent } from '../../services/StudentService'
+	import { getGroups } from '../../services/GroupService'
 
 	let toastElement = null
 	let toastText = 'El alumno se ha creado correctamente'
 	let variant = 'warning'
 	$: showToast = false
+
+	let grupos = getGroups()
 
 	let estudiante = {
 		carnet: null,
@@ -19,9 +20,9 @@
 		email: null,
 		jornada: null,
 		direccion: null,
-		tel_alumno: null,
+		telefono_alumno: null,
 		responsable: null,
-		tel_responsable: null,
+		telefono_responsable: null,
 		clave: null,
 		estado_alumno: null,
 		year_ingreso: null,
@@ -37,9 +38,9 @@
 			estudiante.email = null
 			estudiante.jornada = null
 			estudiante.direccion = null
-			estudiante.tel_alumno = null
+			estudiante.telefono_alumno = null
 			estudiante.responsable = null
-			estudiante.tel_responsable = null
+			estudiante.telefono_responsable = null
 			estudiante.clave = null
 			estudiante.estado_alumno = null
 			estudiante.year_ingreso = null
@@ -222,7 +223,7 @@
 						id="telefono"
 						name="telefono"
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-						bind:value={estudiante.tel_alumno}
+						bind:value={estudiante.telefono_alumno}
 					/>
 				</div>
 				<div>
@@ -241,16 +242,16 @@
 				</div>
 				<div>
 					<label
-						for="tel_responsable"
+						for="telefono_responsable"
 						class="block text-sm font-medium text-gray-700"
 					>
 						Telefono del Responsable
 					</label>
 					<input
-						id="tel_responsable"
-						name="tel_responsable"
+						id="telefono_responsable"
+						name="telefono_responsable"
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
-						bind:value={estudiante.tel_responsable}
+						bind:value={estudiante.telefono_responsable}
 					/>
 				</div>
 				<div>
@@ -263,9 +264,11 @@
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
 						bind:value={estudiante.id_grupo}
 					>
-						{#each $Groups as grupo}
-							<option value={grupo.id}>{grupo.nombre_grupo}</option>
-						{/each}
+						{#await grupos then grupos}
+							{#each grupos as grupo}
+								<option value={grupo.id}>{grupo.nombre}</option>
+							{/each}
+						{/await}
 					</select>
 				</div>
 

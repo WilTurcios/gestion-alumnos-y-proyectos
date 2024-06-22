@@ -2,10 +2,8 @@
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Students } from '../../store/StudentsStore'
-	import { Groups } from '../../store/GroupsStore.js'
 	import { Link } from 'svelte-routing'
-	import { getStudents } from '../../services/StudentService'
+	import { deleteStudentById, getStudents } from '../../services/StudentService'
 
 	let toastElement = null
 	let search = ''
@@ -21,15 +19,15 @@
 	}
 
 	const handleDeleteMultiple = () => {
-		Students.deleteMutlipleStudents(ids_estudiantes.ids).then(() => {
-			showToast = true
-			toastText = 'Estudiantes eliminados correctamente'
-			variant = 'danger'
-		})
+		// Students.deleteMutlipleStudents(ids_estudiantes.ids).then(() => {
+		// 	showToast = true
+		// 	toastText = 'Estudiantes eliminados correctamente'
+		// 	variant = 'danger'
+		// })
 	}
 
 	const handleDelete = id => e => {
-		Students.deleteStudent(id).then(() => {
+		deleteStudentById(id).then(() => {
 			showToast = true
 			toastText = 'Estudiante eliminado correctamente'
 			variant = 'danger'

@@ -2,7 +2,7 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Users } from '../../store/UsersStore.js'
+	import { updateUser } from '../../services/UserService'
 
 	export let currentUserID
 
@@ -53,7 +53,7 @@
 	getById(currentUserID)
 
 	function handleSubmit(e) {
-		Users.updateUser(usuario).then(user => {
+		updateUser(usuario).then(user => {
 			usuario.nombre_usuario = null
 			usuario.nombres = null
 			usuario.apellidos = null

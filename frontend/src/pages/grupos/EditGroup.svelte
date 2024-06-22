@@ -2,7 +2,7 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Groups } from '../../store/GroupsStore.js'
+	import { updateGroup } from '../../services/GroupService'
 
 	export let currentGroupID
 
@@ -29,7 +29,7 @@
 	getById(currentGroupID)
 
 	function handleSubmit(e) {
-		Groups.updateGroup(grupo)
+		updateGroup(grupo)
 			.then(() => {
 				grupo.grupo = null
 				showToast = true

@@ -1,12 +1,13 @@
 <script>
+	import { navigate } from 'svelte-routing'
+	import { logout } from '../../services/UserService'
 	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
 	import Navbar from './Navbar.svelte'
 
 	const handleClick = e => {
-		AuthenticatedUser.logout().then(() => {
-			console.log('Sesión cerrada correctamente')
-
-			location.reload()
+		logout().then(() => {
+			AuthenticatedUser.set(null)
+			navigate('/login', { replace: true })
 		})
 	}
 </script>

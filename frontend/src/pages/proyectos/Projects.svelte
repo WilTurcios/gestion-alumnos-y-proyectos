@@ -2,14 +2,13 @@
 	import { Link, navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
-	import { Users } from '../../store/UsersStore.js'
 	import Toast from '../../components/ui/Toast.svelte'
 	import { deleteProjectById, getProjects } from '../../services/ProjectService'
 	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
 
 	let toastElement = null
 	let showToast = false
-	let toastText = 'Registro eliminado correctament'
+	let toastText = 'Registro eliminado correctamente'
 	let variant = 'danger'
 	let timer
 
@@ -24,51 +23,66 @@
 	}
 
 	const handleDeleteMultiple = () => {
-		Users.deleteMutlipleUsers(ids_usuarios.ids).then(() => {
-			showToast = true
-			toastText = 'Usuarios eliminados correctamente'
-			variant = 'success'
-		})
+		// Users.deleteMutlipleUsers(ids_usuarios.ids).then(() => {
+		// 	showToast = true;
+		// 	toastText = 'Usuarios eliminados correctamente';
+		// 	variant = 'success';
+		// });
 	}
 
-	const handleDelete = id => e => {
-		deleteProjectById(id)
-
-		proyectos = getProjects()
+	const handleDelete = (id, creado_por) => e => {
+		deleteProjectById({ id, creado_por })
+			.then(() => {
+				proyectos = getProjects()
+				showToast = true
+				toastText = 'Proyecto eliminado correctamente'
+				variant = 'success'
+			})
+			.catch(error => {
+				console.error('Error eliminando proyecto:', error)
+				showToast = true
+				toastText = 'Error eliminando proyecto'
+				variant = 'danger'
+			})
 	}
 
 	function handleSearch(event) {
 		const search = event.target.value
-		if (!search) {
+		if (!search.trim()) {
 			proyectos = getProjects()
+			return
 		}
 
-		clearTimeout(timer) // Usa clearTimeout en lugar de clearInterval
+		clearTimeout(timer)
 
 		timer = setTimeout(() => {
 			fetch(
-				`http://localhost/proyecto-DAW/backend/api/proyectos?tema=${search}`
+				`http://localhost/proyecto-DAW/backend/api/proyectos?tema=${search}`,
+				{
+					headers: {
+						Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
+					}
+				}
 			)
-				.then(res => {
-					proyectos = res.json()
+				.then(res => res.json())
+				.then(data => {
+					proyectos = data
 				})
 				.catch(error => {
 					console.error('Error fetching projects:', error)
+					showToast = true
+					toastText = 'Error buscando proyectos'
+					variant = 'danger'
 				})
-		}, 750)
+		}, 1000)
 	}
 </script>
 
 <Container>
 	<header class="w-full flex justify-between items-center">
-		<h2 class="text-3xl text-light font-semibold mb-4">Usuarios</h2>
+		<h2 class="text-3xl text-light font-semibold mb-4">Proyectos</h2>
 		<div class="flex gap-2 justify-between items-center">
 			<form class="flex gap-2 justify-between items-center">
-				<button
-					class="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-green-600"
-				>
-					Buscar
-				</button>
 				<input
 					type="text"
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
@@ -78,10 +92,10 @@
 			</form>
 			<div class="flex gap-2 justify-between items-center">
 				<Link
-					to="/usuarios/agregar_usuario"
+					to="/proyectos/agregar_proyecto"
 					class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
 				>
-					Agregar Usuario
+					Agregar Proyecto
 				</Link>
 				<button
 					class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
@@ -96,17 +110,15 @@
 	<Table
 		headers={[
 			'Accion Multiple',
-			'Usuario',
-			'Clave',
-			'Nombres',
-			'Apellidos',
-			'Carnet',
-			'Telefono',
-			'Celular',
-			'Correo',
+			'Tema',
+			'Nombre de la Empresa',
+			'Asesor',
+			'Estado',
+			'Creado por',
+			'Fecha de Presentación',
 			'Acciones'
 		]}
-		title="Registros de usuarios"
+		title="Registros de Proyectos"
 	>
 		<tbody class="text-xs">
 			{#await proyectos}
@@ -139,13 +151,7 @@
 							{project.creado_por.apellidos}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{project.tel}
-						</td>
-						<td class=" px-2 py-2 whitespace-nowrap">
 							{project.fecha_presentacion}
-						</td>
-						<td class=" px-2 py-2 whitespace-nowrap">
-							{project.email}
 						</td>
 						<td
 							class="px-2 py-2 whitespace-nowrap flex justify-between items-center"
@@ -153,14 +159,15 @@
 							<button
 								type="button"
 								class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-								on:click={handleDelete(project.id)}>Eliminar</button
+								on:click={handleDelete(project.id, project.creado_por.id)}
+								>Eliminar</button
 							>
 							<div class="flex gap-2 justify-between items-center">
 								<Link
-									to="/usuarios/{project.id}"
+									to="/proyectos/{project.id}"
 									class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md focus:outline-none focus:bg-blue-600"
 								>
-									Editar Usuario
+									Editar Proyecto
 								</Link>
 							</div>
 						</td>

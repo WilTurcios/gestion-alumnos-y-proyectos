@@ -1,9 +1,8 @@
 <script>
 	import Container from '../../components/ui/Container.svelte'
-	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Students } from '../../store/StudentsStore'
-	import { Groups } from '../../store/GroupsStore.js'
+	import { getGroups } from '../../services/GroupService'
+	import { updateStudent } from '../../services/StudentService'
 	import { navigate } from 'svelte-routing'
 
 	export let current_student_id
@@ -12,6 +11,8 @@
 	let toastText = 'El alumno se ha creado correctamente'
 	let variant = 'warning'
 	$: showToast = false
+
+	$: grupos = getGroups()
 
 	let current_student = {
 		id: current_student_id,
@@ -59,7 +60,7 @@
 	getById(current_student_id)
 
 	function handleSubmit(e) {
-		let new_student = Students.updateStudent(current_student).then(student => {
+		updateStudent(current_student).then(student => {
 			showToast = true
 			toastText = 'El alumno se ha actualizado correctamente'
 			variant = 'success'
@@ -278,9 +279,11 @@
 						class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
 						bind:value={current_student.id_grupo}
 					>
-						{#each $Groups as grupo}
-							<option value={grupo.id}>{grupo.nombre_grupo}</option>
-						{/each}
+						{#await grupos then grupos}
+							{#each grupos as grupo}
+								<option value={grupo.id}>{grupo.nombre_grupo}</option>
+							{/each}
+						{/await}
 					</select>
 				</div>
 

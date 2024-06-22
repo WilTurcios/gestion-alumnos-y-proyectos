@@ -21,10 +21,10 @@
 	import Backup from './pages/backup/Backup.svelte'
 	import Subjects from './pages/Materias/Subjects.svelte'
 	import Projects from './pages/proyectos/Projects.svelte'
-
-	if ($AuthenticatedUser === null) {
-		navigate('/login', { replace: true })
-	}
+	import AddProject from './pages/proyectos/AddProject.svelte'
+	import EditProject from './pages/proyectos/EditProject.svelte'
+	import Criteria from './pages/Materias/Criterios/Criteria.svelte'
+	import AddSubject from './pages/Materias/AddSubject.svelte'
 </script>
 
 <main>
@@ -51,17 +51,20 @@
 			<Route path="/proyectos">
 				<Projects />
 			</Route>
-			<!-- <Route path="/proyectos/agregar_proyecto">
-			<AddProject />
-		</Route>
-		<Route path="/proyectos/:id" let:params>
-			<EditProject current_student_id={params.id} />
-		</Route> -->
+			<Route path="/proyectos/agregar_proyecto">
+				<AddProject />
+			</Route>
+			<Route path="/proyectos/:id" let:params>
+				<EditProject currentProjectID={params.id} />
+			</Route>
 			<Route path="/materias">
 				<Subjects />
 			</Route>
 			<Route path="/materias/agregar_materia">
-				<AddStudent />
+				<AddSubject />
+			</Route>
+			<Route path="/materias/gestionar_criterios/:materia" let:params>
+				<Criteria materia={params.materia} />
 			</Route>
 			<Route path="/materias/:id" let:params>
 				<EditStudent current_student_id={params.id} />
@@ -99,9 +102,9 @@
 			<Route path="/backup">
 				<Backup />
 			</Route>
-			<Container>
+			<!-- <Container>
 				<Footer />
-			</Container>
+			</Container> -->
 		{:else}
 			<Route path="/login">
 				<Login />

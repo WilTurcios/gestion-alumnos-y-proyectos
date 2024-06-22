@@ -2,9 +2,12 @@
 	import { Link } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Table from '../../components/ui/Table.svelte'
-	import { Users } from '../../store/UsersStore.js'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { getUsers } from '../../services/UserService'
+	import {
+		deleteMultipleUsers,
+		deleteUserById,
+		getUsers
+	} from '../../services/UserService'
 
 	let toastElement = null
 	let showToast = false
@@ -18,18 +21,21 @@
 	}
 
 	const handleDeleteMultiple = () => {
-		Users.deleteMutlipleUsers(ids_usuarios.ids).then(() => {
+		deleteMultipleUsers(ids_usuarios.ids).then(() => {
 			showToast = true
 			toastText = 'Usuarios eliminados correctamente'
 			variant = 'success'
+			usuarios = getUsers()
 		})
 	}
 
 	const handleDelete = id => e => {
-		Users.deleteUsers(id).then(() => {
+		deleteUserById(id).then(() => {
 			showToast = true
 			toastText = 'Usuario eliminado correctamente'
 			variant = 'success'
+
+			usuarios = getUsers()
 		})
 	}
 </script>
@@ -111,7 +117,7 @@
 							{user.carnet_docente}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
-							{user.tel}
+							{user.telefono}
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
 							{user.celular}

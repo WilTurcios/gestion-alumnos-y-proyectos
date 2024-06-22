@@ -1,29 +1,15 @@
 import { writable } from 'svelte/store'
+import { getAuthenticatedUser } from '../services/UserService'
 
 const createAuthenticatedUserStore = async () => {
-	let INITIAL_USER = null
-	try {
-		const res = await fetch(
-			'http://localhost/proyecto-DAW/backend/auth/usuario_autenticado',
-			{
-				method: 'POST'
-			}
-		)
-		if (!res.ok) {
-			INITIAL_USER = null
-		} else {
-			const data = await res.json()
-			INITIAL_USER = data
-		}
-	} catch (error) {
-		console.error('Error fetching user:', error)
-	}
+	const usuario = await getAuthenticatedUser()
 
-	const { subscribe, set, update } = writable(INITIAL_USER)
+	const { subscribe, set, update } = writable(usuario)
 
 	return {
 		subscribe,
-		set
+		set,
+		update
 	}
 }
 

@@ -2,7 +2,6 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { Companies } from '../../store/CompaniesStore'
 	import { addSubject } from '../../services/SubjectService'
 
 	export let currentCompanyId
