@@ -20,7 +20,8 @@ class Proyecto
     public ?string $fecha_presentacion = null,
     public ?string $doc = null,
     public ?Usuario $creado_por = null,
-    public ?array $estudiantes = []
+    public ?array $estudiantes = [],
+    public ?array $jurados = []
   ) {
   }
 }

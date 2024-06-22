@@ -230,29 +230,29 @@ class SubjectController
     }
   }
 
-  public function deleteSubject(array $materia_data): Response
+  public function deleteSubject(array $data, $usuario): Response
   {
-    $materiaId = $materia_data['id'] ?? null;
+    if (!$data['id_materia'] || !is_integer($data['id_materia'])) {
+      throw new ParameterIsMissingException(
+        'Bad Request: Asegurate de proporcionar un data adecuado.',
+        400
+      );
+    }
 
-    if ($materia_data['creado_por'] !== $_SESSION['usuario']['id']) {
+    if ($data['creado_por'] !== $usuario->id) {
       throw new UnauthorizedRequestException(
         'Unauthorized Request: Esta materia no fue registrada por tí, no puedes eliminarla'
       );
     }
 
-    if (!$materiaId) {
-      throw new BadRequestException(
-        'Bad Request: Asegúrate de proporcionar los datos necesarios para la eliminación de la materia.'
-      );
-    }
-
-    $result = $this->materiaService->delete($materiaId);
+    $result = $this->materiaService->delete($data['id_materia']);
 
     if ($result) {
       return new Response(
         true,
         201,
-        'La materia ha sido eliminada correctamente'
+        'La materia ha sido eliminada correctamente',
+        [['message' => 'La materia se eliminó correctamente']]
       );
     } else {
       throw new InternalServerErrorExeception(

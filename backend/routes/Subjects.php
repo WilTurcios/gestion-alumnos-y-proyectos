@@ -89,8 +89,11 @@ switch (true) {
   case $method === 'DELETE' && $ids !== null:
     $response = $subjectController->deleteManySubjects($ids);
     break;
-  case $method === 'DELETE':
-    $response = $subjectController->deleteSubject($data);
+  case $method === 'DELETE' && $id:
+    $response = $subjectController->deleteSubject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   default:
     $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');

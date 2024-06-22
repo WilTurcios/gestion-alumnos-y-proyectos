@@ -25,6 +25,7 @@
 	import EditProject from './pages/proyectos/EditProject.svelte'
 	import Criteria from './pages/Materias/Criterios/Criteria.svelte'
 	import AddSubject from './pages/Materias/AddSubject.svelte'
+	import EditSubject from './pages/Materias/EditSubject.svelte'
 </script>
 
 <main>
@@ -67,7 +68,7 @@
 				<Criteria materia={params.materia} />
 			</Route>
 			<Route path="/materias/:id" let:params>
-				<EditStudent current_student_id={params.id} />
+				<EditSubject currentMateriaID={params.id} />
 			</Route>
 			<Route path="/grupos">
 				<Groups />

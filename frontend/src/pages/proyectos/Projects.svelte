@@ -5,6 +5,7 @@
 	import Toast from '../../components/ui/Toast.svelte'
 	import { deleteProjectById, getProjects } from '../../services/ProjectService'
 	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
+	import Badge from '../../components/ui/Badge.svelte'
 
 	let toastElement = null
 	let showToast = false
@@ -148,9 +149,15 @@
 						<td class=" px-2 py-2 whitespace-nowrap">
 							{project.estado}
 						</td>
-						<td class=" px-2 py-2 whitespace-nowrap">
-							{project.creado_por.nombres}
-							{project.creado_por.apellidos}
+						<td class=" px-2 py-2 whitespace-nowrap text-center">
+							<Badge
+								variant="yellow"
+								text={project.creado_por.id === $AuthenticatedUser.id
+									? 'Tú'
+									: project.creado_por.nombres +
+										' ' +
+										project.creado_por.apellidos}
+							/>
 						</td>
 						<td class=" px-2 py-2 whitespace-nowrap">
 							{project.fecha_presentacion}

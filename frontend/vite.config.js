@@ -10,7 +10,7 @@ export default defineConfig({
 	},
 	plugins: [svelte()],
 	build: {
-		outDir: '../administracion',
+		outDir: '../../administracion',
 		target: 'es2022'
 	}
 })

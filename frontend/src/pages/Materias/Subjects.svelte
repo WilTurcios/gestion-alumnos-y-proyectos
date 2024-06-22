@@ -4,6 +4,8 @@
 	import Table from '../../components/ui/Table.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
 	import { deleteSubjectById, getSubjects } from '../../services/SubjectService'
+	import Badge from '../../components/ui/Badge.svelte'
+	import { AuthenticatedUser } from '../../store/AuthenticatedUserStore'
 
 	let toastElement = null
 	let toastText = 'La empresa se ha registrado correctamente'
@@ -25,12 +27,17 @@
 		// })
 	}
 
-	const handleDelete = id => e => {
-		deleteSubjectById(id).then(() => {
+	const handleDelete = (id_materia, creado_por) => async e => {
+		try {
+			await deleteSubjectById({ id_materia, creado_por })
 			showToast = true
-			toastText = 'Registro eliminado correctament'
+			toastText = 'Registro eliminado correctamente'
+			variant = 'sucess'
+		} catch (err) {
+			showToast = true
+			toastText = err.message ?? 'Error al eliminar el registro'
 			variant = 'danger'
-		})
+		}
 	}
 
 	function handleSearch(event) {
@@ -100,6 +107,7 @@
 			'Tipo',
 			'Fecha Inicio',
 			'Fecha Fin',
+			'Creado Por',
 			'Acciones'
 		]}
 		title="Registros de empresas"
@@ -141,13 +149,23 @@
 							<td class="px-4 py-2 whitespace-nowrap">
 								{subject.fecha_fin ?? 'No especificada'}
 							</td>
+							<td class="px-4 py-2 whitespace-nowrap text-center">
+								<Badge
+									variant="yellow"
+									text={subject.creado_por.id === $AuthenticatedUser.id
+										? 'Tú'
+										: subject.creado_por.nombres +
+											' ' +
+											subject.creado_por.apellidos}
+								/>
+							</td>
 							<td
 								class="px-4 py-2 whitespace-nowrap flex justify-between items-center"
 							>
 								<button
 									type="button"
 									class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
-									on:click={handleDelete(subject.id)}
+									on:click={handleDelete(subject.id, subject.creado_por.id)}
 								>
 									Eliminar
 								</button>

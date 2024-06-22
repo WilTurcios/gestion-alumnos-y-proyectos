@@ -54,7 +54,7 @@ class SubjectModel
       $materia->fecha_fin,
       $materia->activo,
       $materia->year,
-      $materia->tipo,
+      $materia->tipo ?? 'Práctica',
       $materia->creado_por->id
     );
 
@@ -208,10 +208,8 @@ class SubjectModel
     return $materia;
   }
 
-  public function delete(?int $materia_id): bool
+  public function delete(int $materia_id): bool
   {
-    if (!$materia_id) return false;
-
     $query = "DELETE FROM materias WHERE id=?";
     $stmt = $this->connection->prepare($query);
 
@@ -268,7 +266,7 @@ class SubjectModel
 
   public function getAll(): array | false
   {
-    $query = "SELECT m.*, c.id as id_criterio, c.criterio, c.porcentaje as porcentaje_criterio, c.tipo, c.estado, c.creado_por as creado_por_criterio FROM materias m LEFT JOIN criterios c ON m.id = c.id_materia";
+    $query = "SELECT m.*, c.id as id_criterio, c.criterio, c.porcentaje as porcentaje_criterio, c.tipo as tipo_criterio, c.estado, c.creado_por as creado_por_criterio FROM materias m LEFT JOIN criterios c ON m.id = c.id_materia";
     $result = $this->connection->query($query);
 
     if (!$result) return false;
@@ -304,7 +302,7 @@ class SubjectModel
           $row['id_criterio'],
           $row['criterio'],
           $row['porcentaje_criterio'],
-          $row['tipo'],
+          $row['tipo_criterio'],
           $row['estado'],
           $creado_por_criterio
         );
@@ -316,10 +314,8 @@ class SubjectModel
     return array_values($materias);
   }
 
-  public function getById(?int $materia_id): Materia | false
+  public function getById(int $materia_id): Materia | false
   {
-    if (!$materia_id) return false;
-
     $query = "SELECT * FROM materias WHERE id=?";
     $stmt = $this->connection->prepare($query);
 

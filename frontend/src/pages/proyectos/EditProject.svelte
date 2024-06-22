@@ -2,9 +2,17 @@
 	import { navigate } from 'svelte-routing'
 	import Container from '../../components/ui/Container.svelte'
 	import Toast from '../../components/ui/Toast.svelte'
-	import { getAssesors } from '../../services/UserService'
-	import { updateProject } from '../../services/ProjectService'
+	import { getAssesors, getJudges } from '../../services/UserService'
+	import {
+		addJudgeToProject,
+		addStudentToProject,
+		deleteJudgeFromProject,
+		deleteStudentFromProject,
+		updateProject
+	} from '../../services/ProjectService'
 	import { getCompanies } from '../../services/CompanyService'
+	import Table from '../../components/ui/Table.svelte'
+	import { getStudents } from '../../services/StudentService'
 
 	export let currentProjectID
 
@@ -13,8 +21,17 @@
 	let variant = 'warning'
 	$: showToast = false
 
+	let ids_jurados = {
+		ids: []
+	}
+	let ids_estudiantes = {
+		ids: []
+	}
+
 	let empresas = []
 	let asesores = []
+	let students = []
+	let judges = []
 	let proyecto = {
 		id: currentProjectID,
 		tema: null,
@@ -30,14 +47,28 @@
 		resultados_esperados: null,
 		fecha_presentacion: null,
 		doc: null,
-		creador_por: null
+		creador_por: null,
+		estudiantes: [],
+		jurados: []
+	}
+
+	let estudiante = {
+		id_estudiante: null,
+		id_proyecto: currentProjectID
+	}
+
+	let jurado = {
+		id_jurado: null,
+		id_proyecto: currentProjectID
 	}
 
 	const fetchData = async () => {
 		empresas = await getCompanies()
 		asesores = await getAssesors()
+		judges = await getJudges()
+		students = await getStudents()
 		const res = await fetch(
-			`http://localhost/proyecto-DAW/backend/api/usuarios/${currentProjectID}`,
+			`http://localhost/proyecto-DAW/backend/api/proyectos/${currentProjectID}`,
 			{
 				headers: {
 					Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
@@ -45,12 +76,15 @@
 			}
 		)
 		const project = await res.json()
-		Object.assign(proyecto, {
+
+		proyecto = {
 			...project[0],
 			id_empresa: project[0].empresa.id,
 			id_asesor: project[0].asesor.id,
-			creador_por: project[0].creado_por.id
-		})
+			creador_por: project[0].creado_por.id,
+			estudiantes: [...project[0].estudiantes],
+			jurados: [...project[0].jurados]
+		}
 	}
 
 	fetchData()
@@ -82,15 +116,73 @@
 			console.log(err)
 		}
 	}
+	const handleSubmitJudge = async () => {
+		try {
+			await addJudgeToProject(jurado)
+			Object.assign(proyecto, {
+				id_jurado: null
+			})
+			showToast = true
+			toastText = 'Jurado creado correctamente'
+			variant = 'success'
+
+			fetchData()
+		} catch (err) {
+			console.log(err)
+		}
+	}
+
+	const handleSubmitStudent = async () => {
+		try {
+			await addStudentToProject(estudiante)
+			Object.assign(proyecto, {
+				id_estudiante: null
+			})
+			showToast = true
+			toastText = 'Estudiante agregado correctamente'
+			variant = 'success'
+
+			fetchData()
+		} catch (err) {
+			console.log(err)
+		}
+	}
+
+	const handleDeleteJudge = id_jurado => async e => {
+		try {
+			await deleteJudgeFromProject({
+				id_jurado,
+				id_proyecto: currentProjectID
+			})
+			showToast = true
+			toastText = 'Jurado removido correctamente'
+			variant = 'success'
+			await fetchData()
+		} catch (e) {}
+	}
+	const handleDeleteStudent = id_alumno => async e => {
+		try {
+			await deleteStudentFromProject({
+				id_alumno,
+				id_proyecto: currentProjectID
+			})
+
+			showToast = true
+			toastText = 'Estudiante removido correctamente'
+			variant = 'success'
+
+			await fetchData()
+		} catch (e) {}
+	}
 </script>
 
 <Container>
 	<div
-		class="w-[600px] mx-auto bg-white rounded-md overflow-hidden shadow-md mb-10"
+		class="xl:w-[1000px] grid grid-cols-2 gap-4 mx-auto bg-white rounded-md overflow-hidden shadow-md mb-10"
 	>
 		<div class="p-4">
 			<h2 class="text-lg font-semibold mb-4">Ingresar Datos del Proyecto</h2>
-			<form on:submit|preventDefault={handleSubmit}>
+			<form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-4">
 				<div>
 					<label for="tema" class="block text-sm font-medium text-gray-700"
 						>Tema</label
@@ -267,6 +359,136 @@
 					>
 				</div>
 			</form>
+		</div>
+		<div>
+			<div class="p-4">
+				<h2 class="text-lg font-semibold mb-4">Agregar Jurados</h2>
+				<form
+					on:submit|preventDefault={handleSubmitJudge}
+					class="flex justify-between items-center"
+				>
+					<div class="">
+						<label
+							for="id_jurado"
+							class="block text-sm font-medium text-gray-700">Jurados</label
+						>
+						<select
+							id="id_jurado"
+							name="id_jurado"
+							class="flex mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={jurado.id_jurado}
+						>
+							{#each judges as judge}
+								<option value={judge.id}
+									>{judge.nombres} {judge.apellidos}</option
+								>
+							{/each}
+						</select>
+					</div>
+					<div class="mt-6">
+						<button
+							type="submit"
+							class="w-full p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+						>
+							Agregar Jurado
+						</button>
+					</div>
+				</form>
+				<Table
+					headers={['Accion Multiple', 'Nombre Jurado', 'Acciones']}
+					title="Jurados del Proyecto"
+				>
+					<tbody>
+						{#each proyecto.jurados as jurado}
+							<tr>
+								<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+									<input
+										type="checkbox"
+										bind:group={ids_jurados.ids}
+										value={jurado.id}
+									/>
+								</td>
+								<td class=" px-2 py-2 whitespace-nowrap">
+									{jurado.nombres}
+									{jurado.apellidos}
+								</td>
+								<td class=" px-2 py-2 whitespace-nowrap">
+									<button
+										type="button"
+										class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+										on:click={handleDeleteJudge(jurado.id)}>Eliminar</button
+									>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</Table>
+			</div>
+			<div class="p-4">
+				<h2 class="text-lg font-semibold mb-4">Agregar Estudiantes</h2>
+				<form
+					on:submit|preventDefault={handleSubmitStudent}
+					class="flex justify-between items-center"
+				>
+					<div class="">
+						<label
+							for="id_estudiante"
+							class="block text-sm font-medium text-gray-700">Estudiantes</label
+						>
+						<select
+							id="id_estudiante"
+							name="id_estudiante"
+							class="flex mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
+							bind:value={estudiante.id_estudiante}
+						>
+							{#each students as student}
+								<option value={student.id}
+									>{student.nombres} {student.apellidos}</option
+								>
+							{/each}
+						</select>
+					</div>
+					<div class="mt-6">
+						<button
+							type="submit"
+							class="w-full p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+						>
+							Agregar Estudiante
+						</button>
+					</div>
+				</form>
+				<Table
+					headers={['Accion Multiple', 'Nombre del Alumno', 'Acciones']}
+					title="Estudiantes del Proyecto"
+				>
+					<tbody>
+						{#each proyecto.estudiantes as std}
+							<tr>
+								<td class="px-4 py-2 whitespace-nowrap min-w-max w-8 max-w-16">
+									<input
+										type="checkbox"
+										bind:group={ids_estudiantes.ids}
+										value={std.id}
+									/>
+								</td>
+								<td class=" px-2 py-2 whitespace-nowrap">
+									{std.nombres}
+									{std.apellidos}
+								</td>
+								<td class=" px-2 py-2 whitespace-nowrap">
+									<button
+										type="button"
+										class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md mr-4 focus:outline-none focus:bg-red-600"
+										on:click={handleDeleteStudent(std.id)}
+									>
+										Eliminar
+									</button>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</Table>
+			</div>
 		</div>
 	</div>
 </Container>

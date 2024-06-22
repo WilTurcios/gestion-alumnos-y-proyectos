@@ -37,7 +37,8 @@
 				fecha_fin: formatDate(materia.fecha_fin)
 			}
 			await addSubject(fromattedSubject)
-			Object.assign(materia, {
+
+			materia = {
 				nombre: '',
 				porcentaje: null,
 				porcentaje_individual: null,
@@ -47,7 +48,8 @@
 				activo: 'S',
 				tipo: '',
 				year: null
-			})
+			}
+
 			showToast = true
 			toastText = 'Materia creada correctamente'
 			variant = 'success'

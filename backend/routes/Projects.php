@@ -6,8 +6,6 @@ require_once 'models/Proyectos.php';
 require_once 'models/Usuarios.php';
 
 use Controllers\ProjectController;
-use Controllers\StudentController;
-use Controllers\SubjectController;
 use Controllers\UserController;
 
 function getAuthenticatedUser($usersController)
@@ -42,12 +40,15 @@ $data = ($json_data && !empty($json_data)) ? json_decode($json_data, true) : nul
 $tema = null;
 $pages = 0;
 $ids = $data && array_key_exists('ids', $data) ?  $data['ids'] : null;
-
+$id_materia = isset($data['id_materia']) ? $data['id_materia'] : null;
 if (!is_null($params)) {
   $tema = ($params && array_key_exists('tema', $params)) ? strtolower($params['tema']) : null;
 }
 
 switch (true) {
+  case $method === 'GET' && $id_materia:
+    $response = $projectController->getProjectBySubjectId($id_materia);
+    break;
   case $method === 'GET' && $id:
     $response = $projectController->getProjectById($id);
     break;
@@ -57,6 +58,12 @@ switch (true) {
   case $method === 'GET':
     $response = $projectController->getAllProjects();
     break;
+  case $method === 'POST' && $id === 'agregar_estudiante':
+    $response = $projectController->addStudentToProject($data);
+    break;
+  case $method === 'POST' && $id === 'agregar_jurado':
+    $response = $projectController->addJudgeToProject($data);
+    break;
   case $method === 'POST':
     $response = $projectController->createProject($data);
     break;
@@ -64,6 +71,16 @@ switch (true) {
     $response = $projectController->updateProject(
       $data,
       getAuthenticatedUser(new UserController(new UserModel))
+    );
+    break;
+  case $method === 'DELETE' && $id === 'eliminar_estudiante':
+    $response = $projectController->deleteStudentFromProject(
+      $data
+    );
+    break;
+  case $method === 'DELETE' && $id === 'eliminar_jurado':
+    $response = $projectController->deleteJudgeFromProject(
+      $data
     );
     break;
   case $method === 'DELETE' && $ids !== null:

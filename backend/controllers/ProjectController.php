@@ -18,6 +18,7 @@ require_once 'exceptions/InternalServerErrorException.php';
 use BadRequestException;
 use CompanyModel;
 use Empresa;
+use Exception;
 use Response;
 use Proyecto;
 use InternalServerErrorException;
@@ -120,6 +121,23 @@ class ProjectController
 
     return $projects;
   }
+  public function getByProjetById(?int $id_proyecto): response
+  {
+
+    if (!$id_proyecto) throw new ParameterIsMissingException(
+      'Bad Request: Asegurate de proporcionar un id de materia adecuado para realizar esta acción',
+      400
+    );
+
+    if (!is_integer($id_proyecto) && $id_proyecto < 0) throw new ParameterIsMissingException(
+      'Bad Request: El id de la materia debe ser un número entero positivo',
+      400
+    );
+
+    $projects = $this->projectService->getById($id_proyecto);
+
+    return $projects;
+  }
 
   public function deleteProject(array $projectData, $usuario): Response
   {
@@ -191,39 +209,176 @@ class ProjectController
       );
     }
 
-    if ($projectData['creado_por'] !== $usuario->id) {
-      throw new UnauthorizedRequestException(
-        'Unauthorized Request: El proyecto que intentas actualizar no fue creado por ti, por lo que esta acción no puede ser realizada'
+    $currentProject = (new ProjectModel())->getById($projectId);
+
+    if (!$currentProject) {
+      throw new NotFoundException(
+        'Not Found: El proyecto no existe.'
       );
     }
 
-    $creado_por = new Usuario($projectData['creado_por']);
+    if ($currentProject->creado_por->id !== $usuario->id) {
+      throw new UnauthorizedRequestException(
+        "Unauthorized Request: El proyecto que intentas actualizar no fue creado por ti, por lo que esta acción no puede ser realizada."
+      );
+    }
+
+    // Validar y sanitizar el input
+    $tema = $projectData['tema'] ?? null;
+    $idEmpresa = $projectData['id_empresa'] ?? null;
+    $idAsesor = $projectData['id_asesor'] ?? null;
+    $objetivos = $projectData['objetivos'] ?? null;
+    $alcancesLimitantes = $projectData['alcances_limitantes'] ?? null;
+    $observaciones = $projectData['observaciones'] ?? null;
+    $cd = $projectData['cd'] ?? null;
+    $estado = $projectData['estado'] ?? null;
+    $motivo = $projectData['motivo'] ?? null;
+    $justificacion = $projectData['justificacion'] ?? null;
+    $resultadosEsperados = $projectData['resultados_esperados'] ?? null;
+    $fechaPresentacion = $projectData['fecha_presentacion'] ?? null;
+    $doc = $projectData['doc'] ?? null;
 
     $project = new Proyecto(
       $projectId,
-      $projectData['tema'] ?? null,
-      new Empresa($projectData['id_empresa']),
-      new Usuario($projectData['id_asesor']),
-      $projectData['objetivos'] ?? null,
-      $projectData['alcances_limitantes'] ?? null,
-      $projectData['observaciones'] ?? null,
-      $projectData['cd'] ?? null,
-      $projectData['estado'] ?? null,
-      $projectData['motivo'] ?? null,
-      $projectData['justificacion'] ?? null,
-      $projectData['resultados_esperados'] ?? null,
-      $projectData['fecha_presentacion'] ?? null,
-      $projectData['doc'] ?? null,
-      $creado_por
+      $tema,
+      $idEmpresa ? new Empresa($idEmpresa) : null,
+      $idAsesor ? new Usuario($idAsesor) : null,
+      $objetivos,
+      $alcancesLimitantes,
+      $observaciones,
+      $cd,
+      $estado,
+      $motivo,
+      $justificacion,
+      $resultadosEsperados,
+      $fechaPresentacion,
+      $doc,
+      $currentProject->creado_por
     );
 
-    $result = $this->projectService->update($project);
+    try {
+      $result = $this->projectService->update($project);
+    } catch (Exception $e) {
+      throw new InternalServerErrorException(
+        'Internal Server Error: Ha ocurrido un error al actualizar el proyecto, por favor intente de nuevo',
+        500,
+        $e
+      );
+    }
 
     if ($result instanceof Proyecto) {
       return new Response(true, 201, 'El proyecto ha sido actualizado exitosamente');
     } else {
       throw new InternalServerErrorException(
         'Internal Server Error: Ha ocurrido un error al actualizar el proyecto, por favor intente de nuevo'
+      );
+    }
+  }
+
+  public function addJudgeToProject(?array $data): Response
+  {
+    if (!isset($data['id_proyecto']) || !isset($data['id_jurado'])) {
+      throw new ParameterIsMissingException(
+        'Bad Request: Asegurate de proporcionar los datos necesarios para agregar un jurado a un proyecto',
+        400
+      );
+    }
+
+    $usuario = (new UserModel)->getById(new Usuario($data['id_jurado']));
+
+    if (!($usuario->es_jurado)) throw new BadRequestException(
+      'Bad Request: El usuario seleccionado no es un jurado.'
+    );
+
+    $result = $this->projectService->addJudgeToProject($data['id_proyecto'], $data['id_jurado']);
+
+    if ($result) {
+      return new Response(
+        true,
+        200,
+        'El proyecto se ha agregado exitosamente',
+        ['message' => 'El jurado se ha asignado exitosamente']
+      );
+    } else {
+      throw new InternalServerErrorException(
+        'Internal Server Error: Ha ocurrido un error al asignar el jurado, por favor intente de nuevo.'
+      );
+    }
+  }
+  public function addStudentToProject(?array $data): Response
+  {
+    if (!isset($data['id_proyecto']) || !isset($data['id_estudiante'])) {
+      throw new ParameterIsMissingException(
+        'Bad Request: Asegurate de proporcionar los datos necesarios para agregar un estudiante a un proyecto',
+        400
+      );
+    }
+
+    $result = $this->projectService->addStudentToProject($data['id_proyecto'], $data['id_estudiante']);
+
+    if ($result) {
+      return new Response(
+        true,
+        200,
+        'El proyecto se ha agregado exitosamente',
+        ['message' => 'El jurado se ha asignado exitosamente']
+      );
+    } else {
+      throw new InternalServerErrorException(
+        'Internal Server Error: Ha ocurrido un error al asignar el jurado, por favor intente de nuevo.'
+      );
+    }
+  }
+
+  public function deleteJudgeFromProject(array $data): Response
+  {
+
+    if (!isset($data['id_jurado']) || !isset($data['id_proyecto'])) {
+      throw new BadRequestException(
+        'Bad Request: Asegúrese de proporcionar los datos necesarios remover el jurado del proyecto.'
+      );
+    }
+
+
+    $result = $this->projectService->deleteJudgeFromProject($data['id_jurado'], $data['id_proyecto']);
+
+    if ($result) {
+      return new Response(
+        true,
+        201,
+        'El proyecto ha sido eliminado correctamente',
+        [['message' => 'El jurado se ha removido correctamente del proyecto']]
+      );
+    } else {
+      throw new InternalServerErrorException(
+        'Internal Server Error: Ha ocurrido un error al eliminar el jurado del proyecto, por favor intente de nuevo.'
+      );
+    }
+  }
+
+  public function deleteStudentFromProject(array $data): Response
+  {
+
+    if (!isset($data['id_alumno']) || !isset($data['id_proyecto'])) {
+      throw new BadRequestException(
+        'Bad Request: Asegúrese de proporcionar los datos necesarios para remover el estudiante del proyecto.'
+      );
+    }
+
+    $result = $this->projectService->deleteStudentFromProject($data['id_alumno'], $data['id_proyecto']);
+
+    if ($result) {
+      return new Response(
+        true,
+        201,
+        'El proyecto ha sido eliminado correctamente',
+        [
+          ['message' => 'El estudiante se ha eliminado del proyecto correctamente']
+        ]
+      );
+    } else {
+      throw new InternalServerErrorException(
+        'Internal Server Error: Ha ocurrido un error al eliminar el estudiante del proyecto, por favor intente de nuevo.'
       );
     }
   }
