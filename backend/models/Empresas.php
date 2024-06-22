@@ -1,6 +1,7 @@
 <?php
 
 require_once 'schemas/Empresa.php';
+require_once 'models/Usuarios.php';
 require_once 'exceptions/NotFoundException.php';
 
 class CompanyModel
@@ -156,15 +157,17 @@ class CompanyModel
     if ($result->num_rows === 0) return [];
 
     $empresas = [];
-
+    $userModel = new UserModel();
     while ($row = $result->fetch_assoc()) {
+      $creado_por = $userModel->getById(new Usuario($row['creado_por']));
       $empresa = new Empresa(
         $row['id'],
         $row['empresa'],
         $row['contacto'],
         $row['direccion'],
         $row['email'],
-        $row['telefono']
+        $row['telefono'],
+        $creado_por
       );
 
       $empresas[] = $empresa;
@@ -191,13 +194,16 @@ class CompanyModel
 
     $row = $result->fetch_assoc();
 
+    $userService = new UserModel();
+
     $empresa = new Empresa(
       $row['id'],
       $row['empresa'],
       $row['contacto'],
       $row['direccion'],
       $row['email'],
-      $row['telefono']
+      $row['telefono'],
+      $userService->getById(new Usuario($row['creado_por']))
     );
 
     $stmt->close();
@@ -224,14 +230,17 @@ class CompanyModel
 
     $empresas = [];
 
+    $userModel = new UserModel();
     while ($row = $result->fetch_assoc()) {
+      $creado_por = $userModel->getById(new Usuario($row['creado_por']));
       $empresa = new Empresa(
         $row['id'],
         $row['empresa'],
         $row['contacto'],
         $row['direccion'],
         $row['email'],
-        $row['telefono']
+        $row['telefono'],
+        $creado_por
       );
 
       $empresas[] = $empresa;

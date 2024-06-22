@@ -11,6 +11,7 @@
 	let toastText = 'Registro eliminado correctamente'
 	let variant = 'danger'
 	let timer
+	let search
 
 	if ($AuthenticatedUser === null) {
 		navigate('/login', { replace: true })
@@ -47,9 +48,9 @@
 	}
 
 	function handleSearch(event) {
-		const search = event.target.value
 		if (!search.trim()) {
 			proyectos = getProjects()
+			search = ''
 			return
 		}
 
@@ -88,6 +89,7 @@
 					class="border focus:outline focus:outline-1 px-4 py-2 rounded"
 					placeholder="Buscar usuarios..."
 					on:keyup={handleSearch}
+					bind:value={search}
 				/>
 			</form>
 			<div class="flex gap-2 justify-between items-center">

@@ -6,6 +6,10 @@ require_once 'schemas/Response.php';
 
 use Controllers\UserController;
 
+if ((!$jwt || !validateJWT($jwt))) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
 $usersController = new UserController(new UserModel());
 
 $response = null;

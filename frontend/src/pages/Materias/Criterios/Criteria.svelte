@@ -2,7 +2,11 @@
 	import { navigate, Link } from 'svelte-routing'
 	import Container from '../../../components/ui/Container.svelte'
 	import Toast from '../../../components/ui/Toast.svelte'
-	import { addCriterionToSubject } from '../../../services/SubjectService'
+	import {
+		addCriterionToSubject,
+		deleteCriterion,
+		getSubjectById
+	} from '../../../services/SubjectService'
 	import Table from '../../../components/ui/Table.svelte'
 
 	export let materia
@@ -15,10 +19,11 @@
 	$: showToast = false
 
 	let criterio = {
+		id_materia: materia.id,
 		criterio: '',
 		porcentaje: null,
 		tipo: 'grupal',
-		estado: ''
+		estado: 'Sin calificar'
 	}
 
 	let ids_criterios = {
@@ -37,16 +42,30 @@
 			showToast = true
 			toastText = 'Criterio creado correctamente'
 			variant = 'success'
-			navigate('/criterios', { replace: true })
+			navigate('/materias', { replace: true })
 		} catch (err) {
 			console.log(err)
 			showToast = true
 			toastText = 'Error al crear el criterio'
-			variant = 'error'
+			variant = 'danger'
 		}
 	}
+	const handleDelete = id => async e => {
+		try {
+			await deleteCriterion(id)
 
-	const handleDelete = id => e => {}
+			showToast = true
+			toastText = 'Criterio eliminado correctamente'
+			variant = 'success'
+
+			materia = await getSubjectById(materia.id)
+		} catch (err) {
+			console.log(err)
+			showToast = true
+			toastText = 'Error al eliminar el criterio'
+			variant = 'danger'
+		}
+	}
 </script>
 
 <Container>

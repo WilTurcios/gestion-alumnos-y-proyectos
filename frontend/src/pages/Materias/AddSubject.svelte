@@ -21,9 +21,22 @@
 		year: null
 	}
 
+	function formatDate(date) {
+		const d = new Date(date)
+		const month = ('0' + (d.getMonth() + 1)).slice(-2)
+		const day = ('0' + d.getDate()).slice(-2)
+		const year = d.getFullYear()
+		return [year, month, day].join('-')
+	}
+
 	const handleSubmit = async () => {
 		try {
-			await addSubject(materia)
+			let fromattedSubject = {
+				...materia,
+				fecha_inicio: formatDate(materia.fecha_inicio),
+				fecha_fin: formatDate(materia.fecha_fin)
+			}
+			await addSubject(fromattedSubject)
 			Object.assign(materia, {
 				nombre: '',
 				porcentaje: null,
@@ -166,12 +179,15 @@
 						<label for="tipo" class="block text-sm font-medium text-gray-700">
 							Tipo
 						</label>
-						<input
+						<select
 							id="tipo"
 							name="tipo"
 							class="mt-1 p-2 w-full border rounded-md focus:outline focus:outline-1"
 							bind:value={materia.tipo}
-						/>
+						>
+							<option value="práctica">Práctica</option>
+							<option value="teórica">Teórica</option>
+						</select>
 					</div>
 					<div>
 						<label for="year" class="block text-sm font-medium text-gray-700">

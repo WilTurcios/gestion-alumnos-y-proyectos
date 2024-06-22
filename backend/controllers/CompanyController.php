@@ -22,7 +22,7 @@ use Usuario;
 class CompanyController
 {
   private array $requiredParameters = [
-    'nombre',
+    'empresa',
     'contacto',
     'direccion',
     'email',
@@ -71,7 +71,7 @@ class CompanyController
 
     $empresa = new Empresa(
       null,
-      $empresa_data['nombre'],
+      $empresa_data['empresa'],
       $empresa_data['contacto'],
       $empresa_data['direccion'],
       $empresa_data['email'],
@@ -90,23 +90,24 @@ class CompanyController
     }
   }
 
-  public function deleteCompany(array $empresa_data): Response
+  public function deleteCompany(?int $id, $usuario): Response
   {
-    $empresaId = $empresa_data['id'] ?? null;
 
-    if ($empresa_data['creado_por'] !== $_SESSION['usuario']['id']) {
+    $current_company = $this->companyService->getById($id);
+
+    if ($current_company->creado_por->id !== $usuario->id) {
       throw new UnauthorizedRequestException(
         'Unauthorized Request: Esta empresa no fue registrada por tí, no puedes eliminarla'
       );
     }
 
-    if (!$empresaId) {
+    if (!$id) {
       throw new BadRequestException(
         'Bad Request: Asegúrate de proporcionar los datos necesarios para la eliminación de la empresa.'
       );
     }
 
-    $result = $this->companyService->delete($empresaId);
+    $result = $this->companyService->delete($id);
 
     if ($result) {
       return new Response(
@@ -121,8 +122,23 @@ class CompanyController
     }
   }
 
-  public function deleteManyCompanies(?array $companies): Response
+  public function deleteManyCompanies(?array $companies, $usuario): Response
   {
+    $current_companies = [];
+
+    foreach ($companies as $company) {
+      if (!is_integer($company['id'])) {
+        throw new BadRequestException(
+          'Bad Request: Asegúrate de que todos los IDs proporcionados sean enteros'
+        );
+      }
+    }
+
+
+    foreach ($companies as $company_id) {
+      $current_companies[] = $this->companyService->getById($company_id);
+    }
+
     if (is_null($companies)) {
       throw new BadRequestException(
         'Bad Request: Asegúrate de proporcionar los datos necesarios para la eliminación de las empresas'
@@ -135,13 +151,8 @@ class CompanyController
       );
     }
 
-    foreach ($companies as $company) {
-      if (!is_integer($company['id'])) {
-        throw new BadRequestException(
-          'Bad Request: Asegúrate de que todos los IDs proporcionados sean enteros'
-        );
-      }
-      if ($company['creado_por'] !== $_SESSION['usuario']['id']) {
+    foreach ($current_companies as $company) {
+      if ($company->creado_por->id !== $usuario->id) {
         throw new BadRequestException(
           'Bad Request: Uno o varias de las empresas que intentas eliminar no fueron registradas por ti'
         );
@@ -159,7 +170,7 @@ class CompanyController
     return new Response(true, 204, 'Las empresas han sido eliminados correctamente');
   }
 
-  public function updateCompany(array $empresa_data): Response
+  public function updateCompany(array $empresa_data, $usuario): Response
   {
     $empresaId = $empresa_data['id'] ?? null;
 
@@ -169,24 +180,23 @@ class CompanyController
       );
     }
 
-    if ($empresa_data['creado_por'] !== $_SESSION['usuario']['id']) {
+    $current_company = $this->companyService->getById($empresaId);
+
+
+    if ($current_company->creado_por->id !== $usuario->id) {
       throw new UnauthorizedRequestException(
         'Unauthorized Request: La empresa que intentas actualizar no fue creada por ti por lo que esta acción no puede ser realizada'
       );
     }
 
-    $creado_por = new Usuario(
-      $empresa_data['creado_por']
-    );
-
     $empresa = new Empresa(
       $empresaId,
-      $empresa_data['nombre'] ?? null,
+      $empresa_data['empresa'] ?? null,
       $empresa_data['contacto'] ?? null,
       $empresa_data['direccion'] ?? null,
       $empresa_data['email'] ?? null,
       $empresa_data['telefono'] ?? null,
-      $creado_por
+      $current_company->creado_por
     );
 
     $result = $this->companyService->update($empresa);

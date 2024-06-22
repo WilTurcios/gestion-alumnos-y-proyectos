@@ -1,13 +1,37 @@
 <?php
 
 require_once 'controllers/ProjectController.php';
+require_once 'controllers/UserController.php';
 require_once 'models/Proyectos.php';
+require_once 'models/Usuarios.php';
 
 use Controllers\ProjectController;
 use Controllers\StudentController;
 use Controllers\SubjectController;
+use Controllers\UserController;
 
-$studentsController = new ProjectController(new ProjectModel());
+function getAuthenticatedUser($usersController)
+{
+  $jwt = getBearerToken();
+  if ($jwt && ($decoded = validateJWT($jwt))) {
+    $username = $decoded['data']->username;
+
+    $usuario = $usersController->getByUsername($username);
+
+    if ($usuario) {
+      return $usuario->data[0];
+    } else {
+      return null;
+    }
+  }
+}
+
+$projectController = new ProjectController(new ProjectModel());
+
+if ((!$jwt || !validateJWT($jwt))) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
 
 $response = null;
 
@@ -25,25 +49,34 @@ if (!is_null($params)) {
 
 switch (true) {
   case $method === 'GET' && $id:
-    $response = $studentsController->getProjectById($id);
+    $response = $projectController->getProjectById($id);
     break;
   case $method === 'GET' && $tema:
-    $response = $studentsController->getProjectByTopic($tema);
+    $response = $projectController->getProjectByTopic($tema);
     break;
   case $method === 'GET':
-    $response = $studentsController->getAllProjects();
+    $response = $projectController->getAllProjects();
     break;
   case $method === 'POST':
-    $response = $studentsController->createProject($data);
+    $response = $projectController->createProject($data);
     break;
   case $method === 'PUT':
-    $response = $studentsController->updateProject($data);
+    $response = $projectController->updateProject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case $method === 'DELETE' && $ids !== null:
-    $response = $studentsController->deleteManyProjects($ids);
+    $response = $projectController->deleteManyProjects(
+      $ids,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case $method === 'DELETE':
-    $response = $studentsController->deleteProject($data);
+    $response = $projectController->deleteProject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   default:
     $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');

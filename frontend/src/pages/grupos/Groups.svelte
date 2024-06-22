@@ -59,7 +59,14 @@
 		clearTimeout(timer)
 
 		timer = setTimeout(() => {
-			fetch(`http://localhost/proyecto-DAW/backend/api/grupos?nombre=${search}`)
+			fetch(
+				`http://localhost/proyecto-DAW/backend/api/grupos?nombre=${search}`,
+				{
+					headers: {
+						Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
+					}
+				}
+			)
 				.then(res => {
 					grupos = res.json()
 				})

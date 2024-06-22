@@ -1,9 +1,34 @@
 <?php
 
 require_once 'controllers/CompanyController.php';
+require_once 'controllers/UserController.php';
 require_once 'models/Empresas.php';
+require_once 'models/Usuarios.php';
 
 use Controllers\CompanyController;
+use Controllers\UserController;
+
+function getAuthenticatedUser($usersController)
+{
+  $jwt = getBearerToken();
+  if ($jwt && ($decoded = validateJWT($jwt))) {
+    $username = $decoded['data']->username;
+
+    $usuario = $usersController->getByUsername($username);
+
+    if ($usuario) {
+      return $usuario->data[0];
+    } else {
+      return null;
+    }
+  }
+}
+
+
+if (!$jwt || !validateJWT($jwt)) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
 
 $companiesController = new CompanyController(new CompanyModel());
 
@@ -25,16 +50,28 @@ switch ($method) {
     }
     break;
   case 'POST':
-    $response = $companiesController->createCompany($data);
+    $response = $companiesController->createCompany(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case 'PUT':
-    $response = $companiesController->updateCompany($data);
+    $response = $companiesController->updateCompany(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case 'DELETE':
     if ($ids !== null) {
-      $response = $companiesController->deleteManyCompanies($ids);
+      $response = $companiesController->deleteManyCompanies(
+        $ids,
+        getAuthenticatedUser(new UserController(new UserModel))
+      );
     } else {
-      $response = $companiesController->deleteCompany($data);
+      $response = $companiesController->deleteCompany(
+        $id,
+        getAuthenticatedUser(new UserController(new UserModel))
+      );
     }
     break;
   default:

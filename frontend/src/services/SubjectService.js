@@ -65,3 +65,36 @@ export function addCriterionToSubject(criterion) {
 		.then(res => res.json())
 		.then(data => data)
 }
+export function deleteCriterion(id) {
+	const token = JSON.parse(localStorage.getItem('token'))
+	return fetch(
+		`http://localhost/proyecto-DAW/backend/api/materias/eliminar_criterio`,
+		{
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify({ id })
+		}
+	)
+		.then(res => res.json())
+		.then(data => data)
+}
+
+export function updateCriterion(criterion) {
+	const token = JSON.parse(localStorage.getItem('token'))
+	return fetch(
+		`http://localhost/proyecto-DAW/backend/api/materias/actualizar_criterio`,
+		{
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			},
+			body: JSON.stringify(criterion)
+		}
+	)
+		.then(res => res.json())
+		.then(data => data)
+}

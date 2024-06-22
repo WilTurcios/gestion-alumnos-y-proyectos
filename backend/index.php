@@ -2,6 +2,8 @@
 session_start();
 
 require_once 'utils/parseUrl.php';
+require_once 'vendor/autoload.php';
+require_once 'JWT/jwt.php';
 require_once 'exceptions/UnauthorizedRequestException.php';
 
 // Manejo de preflight requests para CORS
@@ -20,11 +22,38 @@ header('Access-Control-Allow-Methods: POST, GET, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
+function getBearerToken()
+{
+  $headers = getallheaders();
+  if (isset($headers['Authorization']) && preg_match('/Bearer\s+(\S+)/', $headers['Authorization'], $matches)) {
+    return $matches[1];
+  }
+  return null;
+}
+// $headers = getallheaders();
+// function getBearerToken($headers)
+// {
+//   if (isset($headers['Authorization']) && preg_match(
+//     '/Bearer\s+(\S+)/',
+//     $headers['Authorization'],
+//     $matches
+//   )) {
+//     return $matches[1];
+//   }
+//   return null;
+// }
+
+
+
+$jwt = getBearerToken();
+
 $url = $_SERVER['REQUEST_URI'];
 $query_params = parse_url($url, PHP_URL_QUERY);
 
 $actions = [
   'api/usuarios' => 'routes/Users.php',
+  'api/asesores' => 'routes/Assesors.php',
+  'api/jurados' => 'routes/Judges.php',
   'api/auth' => 'routes/Auth.php',
   'api/estudiantes' => 'routes/Students.php',
   'api/grupos' => 'routes/Groups.php',
@@ -42,10 +71,6 @@ $id = $args['id'] ?? null;
 $path = $args['path'] ?? null;
 
 try {
-  if (!isset($_SESSION['usuario']) && $path !== 'api/auth') {
-    throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
-  }
-
   require_once $actions[$path];
 } catch (mysqli_sql_exception $ex) {
   $errorCode = $ex->getCode();

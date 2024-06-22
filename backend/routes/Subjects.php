@@ -2,11 +2,35 @@
 
 require_once 'controllers/SubjectController.php';
 require_once 'models/Materias.php';
+require_once 'controllers/UserController.php';
+require_once 'models/Usuarios.php';
 
 use Controllers\StudentController;
 use Controllers\SubjectController;
+use Controllers\UserController;
 
-$studentsController = new SubjectController(new SubjectModel());
+function getAuthenticatedUser($usersController)
+{
+  $jwt = getBearerToken();
+  if ($jwt && ($decoded = validateJWT($jwt))) {
+    $username = $decoded['data']->username;
+
+    $usuario = $usersController->getByUsername($username);
+
+    if ($usuario) {
+      return $usuario->data[0];
+    } else {
+      return null;
+    }
+  }
+}
+
+if ((!$jwt || !validateJWT($jwt))) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
+
+$subjectController = new SubjectController(new SubjectModel());
 
 $response = null;
 
@@ -24,25 +48,49 @@ if (!is_null($params)) {
 
 switch (true) {
   case $method === 'GET' && $id:
-    $response = $studentsController->getSubjectById($id);
+    $response = $subjectController->getSubjectById($id);
     break;
   case $method === 'GET' && $nombre:
-    $response = $studentsController->getSubjectByName($nombre);
+    $response = $subjectController->getSubjectByName($nombre);
     break;
   case $method === 'GET':
-    $response = $studentsController->getAllSubjects();
+    $response = $subjectController->getAllSubjects();
+    break;
+  case $method === 'POST' && $id === 'agregar_criterio':
+    $response = $subjectController->addCriterionToSubject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case $method === 'POST':
-    $response = $studentsController->createSubject($data);
+    $response = $subjectController->createSubject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
+    break;
+  case $method === 'PUT' && $id === 'actualizar_criterio':
+    $response = $subjectController->updateCriterion(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case $method === 'PUT':
-    $response = $studentsController->updateSubject($data);
+    $response = $subjectController->updateSubject(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
+    break;
+  case $method === 'DELETE' && $id === 'eliminar_criterio':
+    $response = $subjectController->deleteCriterionById(
+      $data,
+      getAuthenticatedUser(new UserController(new UserModel))
+    );
     break;
   case $method === 'DELETE' && $ids !== null:
-    $response = $studentsController->deleteManySubjects($ids);
+    $response = $subjectController->deleteManySubjects($ids);
     break;
   case $method === 'DELETE':
-    $response = $studentsController->deleteSubject($data);
+    $response = $subjectController->deleteSubject($data);
     break;
   default:
     $response = new Response(false, 500, 'Algo salió mal, por favor, intentalo de nuevo más tarde.');

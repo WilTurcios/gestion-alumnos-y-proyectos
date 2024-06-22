@@ -267,7 +267,7 @@ class ProjectModel
 
   public function getById(int $id_proyecto): Proyecto | false
   {
-    $query = "SELECT * FROM proyectos p INNER JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto WHERE p.id = ?";
+    $query = "SELECT * FROM proyectos p LEFT JOIN alumnosxproyecto ap ON p.id = ap.id_proyecto WHERE p.id = ?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
@@ -294,9 +294,9 @@ class ProjectModel
         $idsProyectos[] = $row['id'];
 
         $empresa = $companyModel->getById($row['id_empresa']);
-        $asesor = $userModel->getById($row['id_asesor']);
-        $alumno = $studentModel->getById($row['id_alumno']);
-        $creado_por = new Usuario($row['creado_por']);
+        $asesor = $userModel->getById(new Usuario($row['id_asesor']));
+        $alumno = $studentModel->getById(new Estudiante($row['id_alumno']));
+        $creado_por = (new UserModel)->getById(new Usuario($row['creado_por']));
         $proyecto = new Proyecto(
           $row['id'],
           $row['tema'],
@@ -435,7 +435,7 @@ class ProjectModel
           $row['fecha_presentacion'],
           $row['doc'],
           $creado_por,
-          [] // Inicializamos la lista de estudiantes vacía
+          []
         );
       }
 

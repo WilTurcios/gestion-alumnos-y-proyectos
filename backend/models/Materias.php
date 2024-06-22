@@ -39,13 +39,13 @@ class SubjectModel
 
   public function save(Materia $materia): Materia | false
   {
-    $query = "INSERT INTO materias (nombre, porcentaje, porcentaje_individual, porcentaje_grupal, fecha_inicio, fecha_fin, activo, year, creado_por) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO materias (nombre, porcentaje, porcentaje_individual, porcentaje_grupal, fecha_inicio, fecha_fin, activo, year, tipo, creado_por) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
 
     $stmt->bind_param(
-      "siiissiii",
+      "siiisssisi",
       $materia->nombre,
       $materia->porcentaje,
       $materia->porcentaje_individual,
@@ -54,6 +54,7 @@ class SubjectModel
       $materia->fecha_fin,
       $materia->activo,
       $materia->year,
+      $materia->tipo,
       $materia->creado_por->id
     );
 
@@ -76,7 +77,7 @@ class SubjectModel
     if (!$stmt) return false;
 
     $stmt->bind_param(
-      "sissi",
+      "isissi",
       $id_materia,
       $criterio->criterio,
       $criterio->porcentaje,
@@ -120,13 +121,15 @@ class SubjectModel
 
     if (!$stmt) return false;
 
+    $previous_criterion = (new self)->getCriterionById($criterio->id);
+
     $stmt->bind_param(
       "sissi",
-      $criterio->criterio,
-      $criterio->porcentaje,
-      $criterio->tipo,
-      $criterio->estado,
-      $criterio->id
+      $criterio->criterio ?? $previous_criterion->criterio,
+      $criterio->porcentaje ?? $previous_criterion->porcentaje,
+      $criterio->tipo ?? $previous_criterion->tipo,
+      $criterio->estado ?? $previous_criterion->estado,
+      $criterio->id ?? $previous_criterion->id
     );
 
     $result = $stmt->execute();
@@ -138,24 +141,61 @@ class SubjectModel
     return $criterio;
   }
 
-  public function update(Materia $materia): Materia | false
+  public function getCriterionById(int $id)
   {
-    $query = "UPDATE materias SET nombre=?, porcentaje=?, porcentaje_individual=?, porcentaje_grupal=?, fecha_inicio=?, fecha_fin=?, activo=?, year=?, creado_por=? WHERE id=?";
+    if (!$id) return false;
+
+    $query = "SELECT * FROM criterios WHERE id=?";
     $stmt = $this->connection->prepare($query);
 
     if (!$stmt) return false;
 
+    $stmt->bind_param("i", $id);
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+    if (!$result || $result->num_rows === 0) return false;
+
+    $row = $result->fetch_assoc();
+
+    $userModel = new UserModel();
+    $user = new Usuario($row['creado_por']);
+
+    $creado_por = $userModel->getById($user);
+    $criterio = new Criterio(
+      $row['id'],
+      $row['criterio'],
+      $row['porcentaje'],
+      $row['tipo'],
+      $row['estado'],
+      $creado_por
+    );
+
+    $stmt->close();
+
+    return $criterio;
+  }
+
+  public function update(Materia $materia): Materia | false
+  {
+    $query = "UPDATE materias SET nombre=?, porcentaje=?, porcentaje_individual=?, porcentaje_grupal=?, fecha_inicio=?, fecha_fin=?, activo=?, year=?, tipo = ? WHERE id=?";
+    $stmt = $this->connection->prepare($query);
+
+    $previous_subject = (new SubjectModel)->getById($materia->id);
+    if (!$stmt) return false;
+
     $stmt->bind_param(
-      "siiissiiii",
-      $materia->nombre,
-      $materia->porcentaje,
-      $materia->porcentaje_individual,
-      $materia->porcentaje_grupal,
-      $materia->fecha_inicio,
-      $materia->fecha_fin,
-      $materia->activo,
-      $materia->year,
-      $materia->creado_por->id,
+      "siiisssisi",
+      $materia->nombre ?? $previous_subject->nombre,
+      $materia->porcentaje ?? $previous_subject->porcentaje,
+      $materia->porcentaje_individual ?? $previous_subject->porcentaje_individual,
+      $materia->porcentaje_grupal ?? $previous_subject->porcentaje_grupal,
+      $materia->fecha_inicio ?? $previous_subject->fecha_inicio,
+      $materia->fecha_fin ?? $previous_subject->fecha_fin,
+      $materia->activo ?? $previous_subject->activo,
+      $materia->year ?? $previous_subject->year,
+      $materia->tipo ?? $previous_subject->tipo,
       $materia->id
     );
 
@@ -228,36 +268,52 @@ class SubjectModel
 
   public function getAll(): array | false
   {
-    $query = "SELECT * FROM materias";
+    $query = "SELECT m.*, c.id as id_criterio, c.criterio, c.porcentaje as porcentaje_criterio, c.tipo, c.estado, c.creado_por as creado_por_criterio FROM materias m LEFT JOIN criterios c ON m.id = c.id_materia";
     $result = $this->connection->query($query);
 
     if (!$result) return false;
     if ($result->num_rows === 0) return [];
 
     $materias = [];
-
     $userModel = new UserModel();
 
     while ($row = $result->fetch_assoc()) {
-      $user = new Usuario($row['creado_por']);
-      $creado_por = $userModel->getById($user);
-      $materia = new Materia(
-        $row['id'],
-        $row['nombre'],
-        $row['porcentaje'],
-        $row['porcentaje_individual'],
-        $row['porcentaje_grupal'],
-        $row['fecha_inicio'],
-        $row['fecha_fin'],
-        $row['activo'],
-        $row['year'],
-        $creado_por
-      );
+      $materia_id = $row['id'];
 
-      $materias[] = $materia;
+      if (!array_key_exists($materia_id, $materias)) {
+        $creado_por = $userModel->getById(new Usuario($row['creado_por']));
+        $materias[$materia_id] = new Materia(
+          $row['id'],
+          $row['nombre'],
+          $row['porcentaje'],
+          $row['porcentaje_individual'],
+          $row['porcentaje_grupal'],
+          $row['fecha_inicio'],
+          $row['fecha_fin'],
+          $row['activo'],
+          $row['year'],
+          $row['tipo'],
+          $creado_por,
+          []
+        );
+      }
+
+      if ($row['id_criterio']) {
+        $creado_por_criterio = $userModel->getById(new Usuario($row['creado_por_criterio']));
+        $criterio = new Criterio(
+          $row['id_criterio'],
+          $row['criterio'],
+          $row['porcentaje_criterio'],
+          $row['tipo'],
+          $row['estado'],
+          $creado_por_criterio
+        );
+
+        $materias[$materia_id]->criterios[] = $criterio;
+      }
     }
 
-    return $materias;
+    return array_values($materias);
   }
 
   public function getById(?int $materia_id): Materia | false
@@ -292,6 +348,7 @@ class SubjectModel
       $row['fecha_fin'],
       $row['activo'],
       $row['year'],
+      $row['tipo'],
       $creado_por
     );
 
@@ -336,6 +393,7 @@ class SubjectModel
         $row['fecha_fin'],
         $row['activo'],
         $row['year'],
+        $row['tipo'],
         $creado_por
       );
 

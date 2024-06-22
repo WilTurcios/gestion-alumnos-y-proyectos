@@ -43,7 +43,13 @@
 
 		timer = setTimeout(() => {
 			fetch(
-				`http://localhost/proyecto-DAW/backend/api/materias?nombre=${search}`
+				`http://localhost/proyecto-DAW/backend/api/materias?nombre=${search}`,
+				{
+					method: 'GET',
+					headers: {
+						Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
+					}
+				}
 			)
 				.then(res => {
 					materias = res.json()
@@ -91,6 +97,7 @@
 			'Porcentaje',
 			'Porcentaje Individual',
 			'Porcentaje Grupal',
+			'Tipo',
 			'Fecha Inicio',
 			'Fecha Fin',
 			'Acciones'
@@ -124,6 +131,9 @@
 							</td>
 							<td class="px-4 py-2 whitespace-nowrap">
 								{subject.porcentaje_grupal}
+							</td>
+							<td class="px-4 py-2 whitespace-nowrap">
+								{subject.tipo}
 							</td>
 							<td class="px-4 py-2 whitespace-nowrap">
 								{subject.fecha_inicio}

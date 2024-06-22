@@ -13,6 +13,7 @@ class Materia
     public ?string $fecha_fin = null,
     public ?string $activo = null,
     public ?int $year = null,
+    public ?string $tipo = null,
     public ?Usuario $creado_por = null,
     public ?array $criterios = []
   ) {

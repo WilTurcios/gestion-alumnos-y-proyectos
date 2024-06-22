@@ -378,7 +378,6 @@ class UserModel
     return $usuarios;
   }
 
-
   public static function deleteAll(): bool
   {
     $query = "DELETE FROM usuarios;";
@@ -427,7 +426,6 @@ class UserModel
       $usuarios[] = $usuario;
     }
 
-
     $stmt->close();
     return $usuarios;
   }
@@ -436,15 +434,8 @@ class UserModel
     string $nombre_usuario
   ): Usuario | false {
     $usuario = new Usuario();
-    // $query = "select * from usuarios where usuario = ?;";
     $query = "select * from usuarios where usuario = '$nombre_usuario';";
-    // $stmt = (new self())->connection->prepare($query);
     $result = (new self())->connection->query($query);
-
-    // if ($stmt) {
-    // $stmt->bind_param("s", $nombre_usuario);
-    // $stmt->execute();
-    // $result = $stmt->get_result();
 
     if ($result && $result->num_rows > 0) {
       while ($row = $result->fetch_assoc()) {
@@ -466,11 +457,7 @@ class UserModel
       }
     }
 
-    // $stmt->close();
     return $usuario;
-    // } else {
-    //   return false;
-    // }
   }
 
   public static function authenticate(

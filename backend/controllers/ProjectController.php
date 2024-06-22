@@ -16,12 +16,14 @@ require_once 'exceptions/NotFoundException.php';
 require_once 'exceptions/InternalServerErrorException.php';
 
 use BadRequestException;
+use CompanyModel;
 use Empresa;
 use Response;
 use Proyecto;
 use InternalServerErrorException;
 use NotFoundException;
 use ParameterIsMissingException;
+use ProjectModel;
 use UnauthorizedRequestException;
 use UserModel;
 use Usuario;
@@ -41,7 +43,6 @@ class ProjectController
     'justificacion',
     'resultados_esperados',
     'fecha_presentacion',
-    'doc',
     'creado_por'
   ];
 
@@ -65,8 +66,9 @@ class ProjectController
       }
     }
 
-    $creado_por = new Usuario($projectData['creado_por']);
-    $usuario = (new UserModel())->getById($projectData['id_asesor']);
+    $creado_por = (new UserModel())->getById(new Usuario($projectData['creado_por']));
+    $usuario = (new UserModel())->getById(new Usuario($projectData['id_asesor']));
+    $empresa = (new CompanyModel)->getById($projectData['id_empresa']);
 
     if (!($usuario->es_asesor)) throw new BadRequestException(
       'Bad Request: El usuario seleccionado no es un asesor.'
@@ -75,7 +77,7 @@ class ProjectController
     $project = new Proyecto(
       null,
       $projectData['tema'],
-      new Empresa($projectData['id_empresa']),
+      $empresa,
       $usuario,
       $projectData['objetivos'],
       $projectData['alcances_limitantes'],
@@ -119,7 +121,7 @@ class ProjectController
     return $projects;
   }
 
-  public function deleteProject(array $projectData): Response
+  public function deleteProject(array $projectData, $usuario): Response
   {
     $projectId = $projectData['id'] ?? null;
 
@@ -129,7 +131,7 @@ class ProjectController
       );
     }
 
-    if ($projectData['creado_por'] !== $_SESSION['usuario']['id']) {
+    if ($projectData['creado_por'] !== $usuario->id) {
       throw new UnauthorizedRequestException(
         'Unauthorized Request: Este proyecto no fue registrado por ti, no puedes eliminarlo'
       );
@@ -146,23 +148,29 @@ class ProjectController
     }
   }
 
-  public function deleteManyProjects(?array $projects): Response
+  public function deleteManyProjects(?array $ids, $usuario): Response
   {
-    if (is_null($projects) || !is_array($projects)) {
+    if (is_null($ids) || !is_array($ids)) {
       throw new BadRequestException(
         'Bad Request: Asegúrese de proporcionar un array de IDs para eliminar los proyectos'
       );
     }
+    $current_projects = [];
+    $projectModel = new ProjectModel;
 
-    foreach ($projects as $project) {
-      if (!is_integer($project['id']) || $project['creado_por'] !== $_SESSION['usuario']['id']) {
+    foreach ($ids as $id) {
+      $current_projects[] = $projectModel->getById($id);
+    }
+
+    foreach ($current_projects as $project) {
+      if ($project->creado_por->id !== $usuario->id) {
         throw new BadRequestException(
           'Bad Request: Asegúrese de que todos los IDs proporcionados sean enteros y registrados por ti'
         );
       }
     }
 
-    $result = $this->projectService->deleteMany(array_column($projects, 'id'));
+    $result = $this->projectService->deleteMany($ids);
 
     if (!$result) {
       throw new InternalServerErrorException(
@@ -173,7 +181,7 @@ class ProjectController
     return new Response(true, 204, 'Los proyectos han sido eliminados correctamente');
   }
 
-  public function updateProject(array $projectData): Response
+  public function updateProject(array $projectData, $usuario): Response
   {
     $projectId = $projectData['id'] ?? null;
 
@@ -183,7 +191,7 @@ class ProjectController
       );
     }
 
-    if ($projectData['creado_por'] !== $_SESSION['usuario']['id']) {
+    if ($projectData['creado_por'] !== $usuario->id) {
       throw new UnauthorizedRequestException(
         'Unauthorized Request: El proyecto que intentas actualizar no fue creado por ti, por lo que esta acción no puede ser realizada'
       );

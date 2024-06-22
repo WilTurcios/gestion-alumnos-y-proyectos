@@ -2,36 +2,50 @@
 
 require_once 'controllers/UserController.php';
 require_once 'models/Usuarios.php';
+require_once 'JWT/jwt.php';
 
 use Controllers\UserController;
 
+
 function logOut()
 {
-  if (isset($_SESSION['usuario'])) {
-    unset($_SESSION['usuario']);
-
-    return new Response(true, 203, 'Ha cerrado sesión correctamente');
-  }
-
-  return new Response(
-    false,
-    400,
-    'Bad Request: El usuario no puede cerrar sesión ya que no hay ninguna sesión iniciada'
-  );
+  return new Response(true, 203, 'Ha cerrado sesión correctamente');
 }
 
 function logIn($user_name, $clave, $usersController)
 {
+
   $result = $usersController->authenticateUser($user_name, $clave);
 
-  if ($result->ok)
+  if ($result->ok) {
+    $token = createJWT($result->data[0]->usuario);
     $_SESSION['usuario'] = $result->data[0];
+    return new Response(true, 200, 'Se ha autenticado exitoramente', ['token' => $token]);
+  } else {
+    throw new UnauthorizedRequestException("Unauthorized Error: Usuario no autorizado");
+  }
 
   return $result;
 }
 
-function getAuthenticatedUser()
+function getAuthenticatedUser($usersController)
 {
+  $jwt = getBearerToken();
+  if ($jwt && ($decoded = validateJWT($jwt))) {
+    $username = $decoded['data']->username;
+
+    $usuario = $usersController->getByUsername($username);
+
+    if ($usuario) {
+      return new Response(true, 200, 'Usuario obtenido exitosamente', $usuario->data);
+    } else {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+  } else {
+    throw new UnauthorizedRequestException(
+      'Unauthorized Request: No tienes los permisos suficientes para realizar esta consulta'
+    );
+  }
   if (!isset($_SESSION['usuario'])) return new Response(
     false,
     401,
@@ -66,7 +80,7 @@ switch ($action) {
     $response = logIn($data['user_name'], $data['clave'], $usersController);
     break;
   case 'usuario_autenticado':
-    $response = getAuthenticatedUser();
+    $response = getAuthenticatedUser($usersController);
     break;
   case 'logout':
     $response = logout();

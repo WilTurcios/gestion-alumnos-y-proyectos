@@ -5,6 +5,11 @@ require_once 'models/Estudiantes.php';
 
 use Controllers\StudentController;
 
+if ((!$jwt || !validateJWT($jwt))) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
+
 $studentsController = new StudentController(new StudentModel());
 
 $response = null;

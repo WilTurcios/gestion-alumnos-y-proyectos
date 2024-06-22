@@ -101,7 +101,7 @@ class UserController
     }
   }
 
-  public function deleteUserById(?int $id/*, Usuario $admin*/): Response
+  public function deleteUserById(?int $id): Response
   {
 
     if (!$id) {
@@ -187,10 +187,10 @@ class UserController
     if (!$result) return new Response(
       false,
       500,
-      'Ha ocurrido un error al tratar de obtener los usuarios.'
+      'Ha ocurrido un error al tratar de obtener los jurados.'
     );
 
-    return new Response(true, 200, 'Usuarios obtenidos exitosamente.', $result);
+    return new Response(true, 200, 'Jurados obtenidos exitosamente.', $result);
   }
 
   public function getAssesors(): Response
@@ -200,10 +200,10 @@ class UserController
     if (!$result) return new Response(
       false,
       500,
-      'Ha ocurrido un error al tratar de obtener los usuarios.'
+      'Ha ocurrido un error al tratar de obtener los asesores.'
     );
 
-    return new Response(true, 200, 'Usuarios obtenidos exitosamente.', $result);
+    return new Response(true, 200, 'Asesores obtenidos exitosamente.', $result);
   }
 
   public function deleteManyUsers(?array $users_ids): Response
@@ -258,6 +258,19 @@ class UserController
     );
 
     return new Response(true, 200, 'Registros obtenidos exitosamente', $result);
+  }
+  public function getByUsername(string $username): Response
+  {
+    $result = $this->userService->getByUsername($username);
+
+
+    if (!$result) return new Response(
+      false,
+      500,
+      'Ha ocurrido un error al obtener los usuarios'
+    );
+
+    return new Response(true, 200, 'Registros obtenidos exitosamente', [$result]);
   }
 
   public function getUserByID(?int $id_usuario): Response

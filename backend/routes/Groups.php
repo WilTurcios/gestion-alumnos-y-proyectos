@@ -5,6 +5,11 @@ require_once 'models/Grupos.php';
 
 use Controllers\GroupController;
 
+if ((!$jwt || !validateJWT($jwt))) {
+  throw new UnauthorizedRequestException('Unauthorized Request: La operación no puede realizarse ya que no estás logueado');
+}
+
+
 $groupsController = new GroupController(new GroupModel());
 $response = ['status' => 'failed', 'message' => 'Invalid Request'];
 
